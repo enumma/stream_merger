@@ -5,7 +5,7 @@ module StreamMerger
   module Utils
     require "time"
 
-    TIMESTAMP_REGEX = /\d{4}-\d{2}-\d{2}_\d{2}-\d{2}-\d{2}\.\d{4}/
+    TIMESTAMP_REGEX = /\d{4}-\d{2}-\d{2}_\d{2}-\d{2}-\d{2}\.\d{3}/
     TIMESTAMP_FORMAT = "%Y-%m-%d_%H-%M-%S.%L"
 
     def file_timestamp(file)

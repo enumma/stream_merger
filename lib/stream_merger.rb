@@ -2,6 +2,7 @@
 
 require "active_support/time"
 require_relative "stream_merger/utils"
+require_relative "stream_merger/conference"
 require_relative "stream_merger/playlist"
 require_relative "stream_merger/segment"
 require_relative "stream_merger/version"

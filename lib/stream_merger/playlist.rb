@@ -3,6 +3,7 @@
 module StreamMerger
   # Playlist
   class Playlist
+    require "tempfile"
     include Utils
 
     attr_reader :file, :segments
@@ -19,7 +20,16 @@ module StreamMerger
       @segments
     end
 
+    def tempfile
+      @tmp ||= Tempfile.new(File.basename(file))
+      tmp.write([header, body].join("\n"))
+      tmp.rewind
+      tmp
+    end
+
     private
+
+    attr_reader :tmp
 
     def header
       <<~HEADER.chomp

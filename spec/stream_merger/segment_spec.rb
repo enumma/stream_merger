@@ -14,4 +14,8 @@ RSpec.describe StreamMerger::Segment do
   it "calculates end" do
     expect(segment.end).to eq segment.start + segment.duration.seconds
   end
+
+  it "gives manifest" do
+    expect(segment.manifest).to eq "ewbmlXE8Py7L-2024-11-01_19-51-01.198.m3u8"
+  end
 end

@@ -5,12 +5,18 @@ module StreamMerger
   class Segment
     include Utils
 
+    MANIFEST_REGEX = /.+\d{4}-\d{2}-\d{2}_\d{2}-\d{2}-\d{2}\.\d{3}/
+
     attr_reader :file, :duration, :start, :end
 
     def initialize(file:, start: file_timestamp(file))
       @file = file
       @start = start
       set_data
+    end
+
+    def manifest
+      "#{File.basename(file)[MANIFEST_REGEX]}.m3u8"
     end
 
     private
