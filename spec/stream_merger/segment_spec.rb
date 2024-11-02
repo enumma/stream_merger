@@ -6,4 +6,12 @@ RSpec.describe StreamMerger::Segment do
   it "calculates duration" do
     expect(segment.duration).to eq 6.33
   end
+
+  it "calculates start" do
+    expect(segment.start).to eq Time.parse("2024-11-01 19:51:01.198000000")
+  end
+
+  it "calculates end" do
+    expect(segment.end).to eq segment.start + segment.duration.seconds
+  end
 end
