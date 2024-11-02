@@ -13,8 +13,8 @@ module StreamMerger
       @segments = []
     end
 
-    def <<(segment)
-      @segments << segment
+    def <<(file)
+      @segments << build_segment(file)
       remove_duplicates
       sort_segments
       @segments
@@ -25,6 +25,26 @@ module StreamMerger
       tmp.write([header, body].join("\n"))
       tmp.rewind
       tmp
+    end
+
+    def start
+      segments.first.start
+    end
+
+    def end
+      segments.last.end
+    end
+
+    def start_seconds(timestamp)
+      return 0 if timestamp <= start
+
+      timestamp - start
+    end
+
+    def end_seconds(timestamp)
+      return segments.sum(&:duration) if timestamp >= self.end
+
+      timestamp - start
     end
 
     private
@@ -54,6 +74,12 @@ module StreamMerger
 
     def sort_segments
       segments.sort_by!(&:file)
+    end
+
+    def build_segment(file)
+      return Segment.new(file:) if segments.empty?
+
+      Segment.new(file:, start: segments.last.end)
     end
   end
 end
