@@ -5,7 +5,7 @@ module StreamMerger
   class Segment
     include Ffmpeg::Utils
 
-    attr_reader :duration, :start, :end
+    attr_reader :file, :duration, :start, :end
 
     def initialize(file:, start: file_timestamp(file))
       @file = file
@@ -13,9 +13,5 @@ module StreamMerger
       @start = start
       @end = start + duration.seconds
     end
-
-    private
-
-    attr_reader :file
   end
 end
