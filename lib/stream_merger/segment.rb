@@ -14,6 +14,6 @@ module StreamMerger
 
     private
 
-    attr_reader :file
+    attr_reader :file, :start, :end
   end
 end
