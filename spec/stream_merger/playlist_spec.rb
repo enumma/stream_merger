@@ -20,4 +20,26 @@ RSpec.describe StreamMerger::Playlist do
     playlist << segment1
     expect(playlist.segments).to eq [segment1]
   end
+
+  it "creates a header" do
+    playlist << segment1
+    header = <<~HEADER.chomp
+      #EXTM3U
+      #EXT-X-VERSION:3
+      #EXT-X-TARGETDURATION:#{segment1.duration.to_i}
+      #EXT-X-MEDIA-SEQUENCE:0
+      #EXT-X-PLAYLIST-TYPE:EVENT
+      #EXT-X-DISCONTINUITY
+    HEADER
+    expect(playlist.send(:header)).to eq header
+  end
+
+  it "creates a body" do
+    playlist << segment1
+    body = <<~BODY.chomp
+      #EXTINF:6.202011,
+      ./spec/fixtures/ewbmlXE8Py7L-2024-11-01_19-51-01.198000000000.ts
+    BODY
+    expect(playlist.send(:body)).to eq body
+  end
 end
