@@ -10,7 +10,7 @@ module StreamMerger
     end
 
     def playlists
-      @playlist_hash.values.sort_by(&:start)
+      @playlist_hash.values.sort_by(&:start_time)
     end
 
     def update(files)
@@ -20,9 +20,9 @@ module StreamMerger
     end
 
     def build_instructions
-      timeline.map do |s, e|
-        concurrent(s, e).map do |p|
-          { file: p.file, start_seconds: p.start_seconds(s), end_seconds: p.end_seconds(e) }
+      timeline.map do |start_time, end_time|
+        concurrent(start_time, end_time).map do |p|
+          { file: p.file, start_seconds: p.start_seconds(start_time), end_seconds: p.end_seconds(end_time) }
         end
       end
     end
@@ -43,15 +43,15 @@ module StreamMerger
     end
 
     def timeline
-      playlists.map { |p| [p.start, p.end] }
+      playlists.map { |p| [p.start_time, p.end_time] }
                .flatten
                .sort
                .each_cons(2)
                .to_a
     end
 
-    def concurrent(s, e)
-      playlists.select { |p| p.start <= s && p.end >= e }
+    def concurrent(start_time, end_time)
+      playlists.select { |p| p.start_time <= start_time && p.end_time >= end_time }
     end
 
     def manifest(file)

@@ -27,24 +27,24 @@ module StreamMerger
       tmp
     end
 
-    def start
-      segments.first.start
+    def start_time
+      segments.first.start_time
     end
 
-    def end
-      segments.last.end
+    def end_time
+      segments.last.end_time
     end
 
     def start_seconds(timestamp)
-      return 0 if timestamp <= start
+      return 0 if timestamp <= start_time
 
-      timestamp - start
+      timestamp - start_time
     end
 
     def end_seconds(timestamp)
-      return segments.sum(&:duration) if timestamp >= self.end
+      return segments.sum(&:duration) if timestamp >= end_time
 
-      timestamp - start
+      timestamp - start_time
     end
 
     private
@@ -79,7 +79,7 @@ module StreamMerger
     def build_segment(file)
       return Segment.new(file:) if segments.empty?
 
-      Segment.new(file:, start: segments.last.end)
+      Segment.new(file:, start_time: segments.last.end_time)
     end
   end
 end

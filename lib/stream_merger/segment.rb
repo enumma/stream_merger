@@ -5,11 +5,11 @@ module StreamMerger
   class Segment
     include Utils
 
-    attr_reader :file, :duration, :start, :end
+    attr_reader :file, :duration, :start_time, :end_time
 
-    def initialize(file:, start: file_timestamp(file))
+    def initialize(file:, start_time: file_timestamp(file))
       @file = file
-      @start = start
+      @start_time = start_time
       set_data
     end
 
@@ -20,7 +20,7 @@ module StreamMerger
     def set_data
       @timestamp = file_timestamp(file)
       @duration = ffmpeg_exact_duration(file)
-      @end = start + duration.seconds
+      @end_time = start_time + duration.seconds
     end
   end
 end
