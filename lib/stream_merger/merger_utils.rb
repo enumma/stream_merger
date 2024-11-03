@@ -1,16 +1,31 @@
 # frozen_string_literal: true
 
 module StreamMerger
+  # MergeUtils
   module MergerUtils
+    ONE_GRID = "[0:v]scale=1080:1920[video]"
+    TWO_GRID = "[0:v]scale=1080:960[top]; \
+         [1:v]scale=1080:960[bottom]; \
+         [top][bottom]vstack=inputs=2:shortest=1[video]; \
+         [0:a][1:a]amix=inputs=2:duration=shortest:dropout_transition=3[audio]"
+    THREE_GRID = "[0:v]scale=1080:960[top]; \
+         [1:v]scale=540:360[bottom_left]; \
+         [2:v]scale=540:360[bottom_right]; \
+         [bottom_left][bottom_right]hstack=inputs=2[bottom]; \
+         [top][bottom]vstack=inputs=2:shortest=1[video]; \
+         [0:a][1:a][2:a]amix=inputs=3:duration=shortest:dropout_transition=3[audio]"
+    FOUR_GRID = "[0:v]scale=540:960[top_left]; \
+         [1:v]scale=540:960[top_right]; \
+         [2:v]scale=540:360[bottom_left]; \
+         [3:v]scale=540:360[bottom_right]; \
+         [top_left][top_right]hstack=inputs=2[top]; \
+         [bottom_left][bottom_right]hstack=inputs=2[bottom]; \
+         [top][bottom]vstack=inputs=2:shortest=1[video]; \
+         [0:a][1:a][2:a][3:a]amix=inputs=4:duration=shortest:dropout_transition=3[audio]"
+    GRIDS = [ONE_GRID, TWO_GRID, THREE_GRID, FOUR_GRID].freeze
+
     def merge_streams(streams)
-      cmd = case streams.size
-            when 1 then single_stream(*streams)
-            when 2 then merge_two_streams(*streams)
-            when 3 then merge_three_streams(*streams)
-            when 4 then merge_four_streams(*streams)
-            else
-              raise ArgumentError, "Unsupported number of streams"
-            end
+      cmd = base_ffmpeg_command(inputs(streams), grid(streams))
       run_ffmpeg(cmd)
     end
 
@@ -27,33 +42,17 @@ module StreamMerger
       CMD
     end
 
-    def single_stream(stream)
-      base_ffmpeg_command(
-        "-i \"#{stream}\"",
-        "[0:v]scale=1080:1920[video]",
-        "[0:a]"
-      )
+    def inputs(streams)
+      streams.map do |stream|
+        "-i \"#{stream}\""
+      end.join(" ")
     end
 
-    def merge_two_streams(stream1, stream2)
-      base_ffmpeg_command(
-        "-i \"#{stream1}\" -i \"#{stream2}\"",
-        "[0:v]scale=640:720[top]; [1:v]scale=640:720[bottom]; [top][bottom]vstack=inputs=2:shortest=1[video]; [0:a][1:a]amix=inputs=2:duration=shortest:dropout_transition=3[audio]"
-      )
-    end
+    def grid(streams)
+      str = GRIDS[streams.size - 1]
+      raise ArgumentError, "Unsupported grid for #{streams.size}" if str.nil?
 
-    def merge_three_streams(stream1, stream2, stream3)
-      base_ffmpeg_command(
-        "-i \"#{stream1}\" -i \"#{stream2}\" -i \"#{stream3}\"",
-        "[0:v]scale=1280:720[top]; [1:v]scale=640:360[bottom_left]; [2:v]scale=640:360[bottom_right]; [bottom_left][bottom_right]hstack=inputs=2[bottom]; [top][bottom]vstack=inputs=2:shortest=1[video]; [0:a][1:a][2:a]amix=inputs=3:duration=shortest:dropout_transition=3[audio]"
-      )
-    end
-
-    def merge_four_streams(stream1, stream2, stream3, stream4)
-      base_ffmpeg_command(
-        "-i \"#{stream1}\" -i \"#{stream2}\" -i \"#{stream3}\" -i \"#{stream4}\"",
-        "[0:v]scale=640:360[top_left]; [1:v]scale=640:360[top_right]; [2:v]scale=640:360[bottom_left]; [3:v]scale=640:360[bottom_right]; [top_left][top_right]hstack=inputs=2[top]; [bottom_left][bottom_right]hstack=inputs=2[bottom]; [top][bottom]vstack=inputs=2:shortest=1[video]; [0:a][1:a][2:a][3:a]amix=inputs=4:duration=shortest:dropout_transition=3[audio]"
-      )
+      str
     end
 
     def run_ffmpeg(command)
