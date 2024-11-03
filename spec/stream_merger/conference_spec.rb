@@ -1,7 +1,8 @@
 # frozen_string_literal: true
 
 RSpec.describe StreamMerger::Conference do
-  let(:files) { fixture_files }
+  let(:files) { fixture_files.select { |file| file.end_with?(".ts") || file.end_with?(".m3u8") } }
+  let(:instructions) { JSON.parse(file_path("instructions.json")) }
   let(:conference) { StreamMerger::Conference.new }
 
   context "when building a playlist" do
@@ -27,19 +28,7 @@ RSpec.describe StreamMerger::Conference do
 
     it "builds instructions" do
       instructions = conference.build_instructions
-      expect(instructions).to eq([
-                                   [{
-                                     file: "./spec/fixtures/ewbmlXE8Py7L-2024-11-01_19-51-01.198.m3u8", start_seconds: 0, end_seconds: 0.747
-                                   }],
-                                   [{
-                                     file: "./spec/fixtures/ewbmlXE8Py7L-2024-11-01_19-51-01.198.m3u8", start_seconds: 0.747, end_seconds: 32.689077000000005
-                                   },
-                                    {
-                                      file: "./spec/fixtures/ZqueuFbL1FQj-2024-11-01_19-51-01.945.m3u8", start_seconds: 0, end_seconds: 31.942077
-                                    }],
-                                   [{ file: "./spec/fixtures/ewbmlXE8Py7L-2024-11-01_19-51-01.198.m3u8",
-                                      start_seconds: 32.689077000000005, end_seconds: 43.534099 }]
-                                 ])
+      expect(instructions).to eq(instructions)
     end
   end
 end

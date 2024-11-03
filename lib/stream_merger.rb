@@ -1,5 +1,6 @@
 # frozen_string_literal: true
 
+require "json"
 require "active_support/time"
 require_relative "stream_merger/utils"
 require_relative "stream_merger/conference"
