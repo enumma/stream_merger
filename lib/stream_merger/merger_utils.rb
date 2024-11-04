@@ -34,12 +34,12 @@ module StreamMerger
        { w: 540, h: 960 }]
     ].freeze
 
-    def merge_streams(instructions)
-      cmd = base_ffmpeg_command(inputs(instructions), generate_grid_filter(instructions))
+    def merge_streams(instructions, output = "output.m3u8")
+      cmd = base_ffmpeg_command(inputs(instructions), generate_grid_filter(instructions), output)
       run_ffmpeg(cmd)
     end
 
-    def base_ffmpeg_command(input_files, filter_complex)
+    def base_ffmpeg_command(input_files, filter_complex, output = "output.m3u8")
       <<~CMD
         ffmpeg #{input_files} \
           -filter_complex "#{filter_complex}" \
@@ -48,7 +48,7 @@ module StreamMerger
           -c:a aac -b:a 128k -ar 44100 \
           -f hls -hls_time 5 \
           -hls_playlist_type event \
-          -hls_flags delete_segments+append_list output.m3u8
+          -hls_flags delete_segments+append_list #{output}
       CMD
     end
 

@@ -46,7 +46,7 @@ RSpec.describe StreamMerger::MergerUtils do # rubocop:disable Metrics/BlockLengt
     dummy_class.merge_streams(instructions2)
   end
 
-  xit "three participants" do
+  it "three participants" do
     dummy_class.merge_streams(instructions3)
   end
 

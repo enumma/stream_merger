@@ -3,6 +3,8 @@
 module StreamMerger
   # Conference
   class Conference
+    require "securerandom"
+    include MergerUtils
     MANIFEST_REGEX = /.+\d{4}-\d{2}-\d{2}_\d{2}-\d{2}-\d{2}\.\d{3}/
 
     def initialize
@@ -25,6 +27,14 @@ module StreamMerger
           { file: p.file, start_seconds: p.start_seconds(start_time), end_seconds: p.end_seconds(end_time),
             width: p.width, height: p.height }
         end
+      end
+    end
+
+    def execute_instructions
+      stream_name = SecureRandom.hex
+      instruction_set = build_instructions
+      instruction_set.each_with_index do |instructions, idx|
+        merge_streams(instructions, "#{stream_name}_#{idx}.m3u8")
       end
     end
 

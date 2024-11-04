@@ -29,5 +29,9 @@ RSpec.describe StreamMerger::Conference do
     it "builds instructions" do
       expect(conference.build_instructions.to_json).to eq(instructions.to_json)
     end
+
+    it "execute instructions" do
+      conference.execute_instructions
+    end
   end
 end
