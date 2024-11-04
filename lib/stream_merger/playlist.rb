@@ -6,10 +6,13 @@ module StreamMerger
     require "tempfile"
     include Utils
 
-    attr_reader :file, :segments
+    attr_reader :file, :segments, :width, :height
 
     def initialize(file:)
       @file = file
+      resolution = ffmpeg_resolution(file)
+      @width = resolution[:width]
+      @height = resolution[:height]
       @segments = []
     end
 

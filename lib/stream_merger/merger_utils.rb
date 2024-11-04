@@ -2,7 +2,7 @@
 
 module StreamMerger
   # MergeUtils
-  module MergerUtils
+  module MergerUtils # rubocop:disable Metrics/ModuleLength
     ONE_GRID = "[0:v]CROP_I,scale=1080:1920[video]; \
                 [0:a]amix=inputs=1:duration=shortest:dropout_transition=3[audio]"
     TWO_GRID = "[0:v]CROP_I,scale=1080:960[top]; \
@@ -54,7 +54,12 @@ module StreamMerger
 
     def inputs(instructions)
       streams = instructions.map { |instruction| instruction[:file] }
-      streams.map { |stream| "-i \"#{stream}\"" }.join(" ")
+      input_commands = streams.each_with_index.map do |stream, index|
+        instruction = instructions[index]
+        start_time = instruction[:start_seconds]
+        "-ss #{start_time} -i \"#{stream}\" -to #{instruction[:end_seconds]}"
+      end
+      input_commands.join(" ")
     end
 
     def generate_grid_filter(streams)

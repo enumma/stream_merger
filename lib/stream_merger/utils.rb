@@ -53,9 +53,8 @@ module StreamMerger
       # Extract the bitrate using regex
       bitrate_match = output.match(%r{bitrate: (\d+ kb/s)})
       bitrate = bitrate_match ? bitrate_match[1] : nil
-      resolution = ffmpeg_resolution(url)
 
-      { duration: duration, start: start, bitrate: bitrate }.merge(resolution)
+      { duration: duration, start: start, bitrate: bitrate }
     end
 
     # Convert duration string (HH:MM:SS.sss) to total seconds

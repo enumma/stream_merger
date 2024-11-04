@@ -2,7 +2,7 @@
 
 RSpec.describe StreamMerger::Conference do
   let(:files) { fixture_files.select { |file| file.end_with?(".ts") || file.end_with?(".m3u8") } }
-  let(:instructions) { JSON.parse(file_path("instructions.json")) }
+  let(:instructions) { JSON.parse(File.open(file_path("instructions.json")).read) }
   let(:conference) { StreamMerger::Conference.new }
 
   context "when building a playlist" do
@@ -27,8 +27,7 @@ RSpec.describe StreamMerger::Conference do
     end
 
     it "builds instructions" do
-      instructions = conference.build_instructions
-      expect(instructions).to eq(instructions)
+      expect(conference.build_instructions.to_json).to eq(instructions.to_json)
     end
   end
 end

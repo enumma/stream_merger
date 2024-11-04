@@ -22,7 +22,8 @@ module StreamMerger
     def build_instructions
       timeline.map do |start_time, end_time|
         concurrent(start_time, end_time).map do |p|
-          { file: p.file, start_seconds: p.start_seconds(start_time), end_seconds: p.end_seconds(end_time) }
+          { file: p.file, start_seconds: p.start_seconds(start_time), end_seconds: p.end_seconds(end_time),
+            width: p.width, height: p.height }
         end
       end
     end

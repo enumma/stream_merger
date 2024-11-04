@@ -13,8 +13,7 @@ RSpec.describe StreamMerger::Utils do
   end
 
   it "returns data" do
-    expect(dummy_class.ffmpeg_data(file)).to eq({ bitrate: "1175 kb/s", duration: 6.33, start: 0.0,
-                                                  width: 288, height: 352 })
+    expect(dummy_class.ffmpeg_data(file)).to eq({ bitrate: "1175 kb/s", duration: 6.33, start: 0.0 })
   end
 
   it "calculates timestamp" do
