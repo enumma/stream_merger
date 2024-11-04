@@ -29,6 +29,11 @@ module StreamMerger
       default=noprint_wrappers=1:nokey=1 -show_entries stream=duration #{url}`.to_f
     end
 
+    def ffmpeg_resolution(url)
+      json_str = `ffprobe -v error -select_streams v:0 -show_entries stream=width,height -of json #{url}`
+      resolution = JSON.parse(json_str)["streams"].first
+    end
+
     def ffmpeg_data(url)
       warn "ffmpeg_data is not accurate"
       # Execute the ffmpeg command and capture its output
@@ -45,8 +50,9 @@ module StreamMerger
       # Extract the bitrate using regex
       bitrate_match = output.match(%r{bitrate: (\d+ kb/s)})
       bitrate = bitrate_match ? bitrate_match[1] : nil
+      resolution = ffmpeg_resolution(url)
 
-      { duration: duration, start: start, bitrate: bitrate }
+      { duration: duration, start: start, bitrate: bitrate, width: resolution["width"], height: resolution["height"] }
     end
 
     # Convert duration string (HH:MM:SS.sss) to total seconds

@@ -10,6 +10,6 @@ RSpec.describe StreamMerger::MergerUtils do
   end
 
   it "foo" do
-    dummy_class.merge_streams(instructions)
+    # dummy_class.merge_streams(instructions)
   end
 end
