@@ -32,6 +32,9 @@ module StreamMerger
     def ffmpeg_resolution(url)
       json_str = `ffprobe -v error -select_streams v:0 -show_entries stream=width,height -of json #{url}`
       resolution = JSON.parse(json_str)["streams"].first
+      width = resolution["width"]
+      height = resolution["height"]
+      { width:, height: }
     end
 
     def ffmpeg_data(url)
@@ -52,7 +55,7 @@ module StreamMerger
       bitrate = bitrate_match ? bitrate_match[1] : nil
       resolution = ffmpeg_resolution(url)
 
-      { duration: duration, start: start, bitrate: bitrate, width: resolution["width"], height: resolution["height"] }
+      { duration: duration, start: start, bitrate: bitrate }.merge(resolution)
     end
 
     # Convert duration string (HH:MM:SS.sss) to total seconds
