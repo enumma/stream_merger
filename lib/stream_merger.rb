@@ -21,4 +21,11 @@ module StreamMerger
       yield(configuration)
     end
   end
+
+  # def self.merge
+  #   @conference = StreamMerger::Conference.new
+  #   loop do
+  #     files
+  #   end
+  # end
 end

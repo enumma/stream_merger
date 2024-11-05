@@ -6,13 +6,10 @@ module StreamMerger
     require "tempfile"
     include Utils
 
-    attr_reader :file, :segments, :width, :height
+    attr_reader :file_name, :file, :segments, :width, :height
 
-    def initialize(file:)
-      @file = file
-      resolution = ffmpeg_resolution(file)
-      @width = resolution[:width]
-      @height = resolution[:height]
+    def initialize(file_name:)
+      @file_name = file_name
       @segments = []
     end
 
@@ -20,14 +17,8 @@ module StreamMerger
       @segments << build_segment(file)
       remove_duplicates
       sort_segments
+      set_resolution
       @segments
-    end
-
-    def tempfile
-      @tmp ||= Tempfile.new(File.basename(file))
-      tmp.write([header, body].join("\n"))
-      tmp.rewind
-      tmp
     end
 
     def start_time
@@ -54,23 +45,6 @@ module StreamMerger
 
     attr_reader :tmp
 
-    def header
-      <<~HEADER.chomp
-        #EXTM3U
-        #EXT-X-VERSION:3
-        #EXT-X-TARGETDURATION:#{segments.max(&:duration)&.duration&.to_i}
-        #EXT-X-MEDIA-SEQUENCE:0
-        #EXT-X-PLAYLIST-TYPE:EVENT
-        #EXT-X-DISCONTINUITY
-      HEADER
-    end
-
-    def body
-      segments.map do |segment|
-        "#EXTINF:#{segment.duration},\n#{segment.file}"
-      end.join("\n")
-    end
-
     def remove_duplicates
       segments.uniq!(&:file)
     end
@@ -83,6 +57,40 @@ module StreamMerger
       return Segment.new(file:) if segments.empty?
 
       Segment.new(file:, start_time: segments.last.end_time)
+    end
+
+    def header
+      max_duration = segments.max { |s| s.duration }&.duration&.to_i # rubocop:disable Style/SymbolProc
+      <<~HEADER.chomp
+        #EXTM3U
+        #EXT-X-VERSION:3
+        #EXT-X-TARGETDURATION:#{max_duration}
+        #EXT-X-MEDIA-SEQUENCE:0
+        #EXT-X-PLAYLIST-TYPE:EVENT
+        #EXT-X-DISCONTINUITY
+      HEADER
+    end
+
+    def body
+      segments.map do |segment|
+        "#EXTINF:#{segment.duration},\n#{segment.file}"
+      end.join("\n")
+    end
+
+    def tempfile
+      @tmp ||= Tempfile.new([file_name, ".m3u8"])
+      tmp.write([header, body].join("\n"))
+      tmp.rewind
+      tmp
+    end
+
+    def set_resolution
+      @file = tempfile.path
+      return if @width && @height
+
+      resolution = ffmpeg_resolution(file)
+      @width = resolution[:width]
+      @height = resolution[:height]
     end
   end
 end

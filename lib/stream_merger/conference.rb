@@ -9,6 +9,7 @@ module StreamMerger
 
     def initialize
       @playlist_hash = {}
+      @black_file = "./black_screen_stream/black.m3u8"
     end
 
     def playlists
@@ -43,14 +44,10 @@ module StreamMerger
     attr_reader :playlist_hash, :instructions
 
     def add_to_hash(file)
-      filename = File.basename(file)
-      if file.end_with?(".m3u8")
-        @playlist_hash[filename] ||= Playlist.new(file:)
-      elsif file.end_with?(".ts")
-        @playlist_hash[manifest(file)] << file
-      else
-        raise ArgumentError, "Invalid HLS file: #{file}"
-      end
+      raise ArgumentError, "Invalid HLS file: #{file}" unless file.end_with?(".ts")
+
+      @playlist_hash[manifest(file)] ||= Playlist.new(file_name: File.basename(file)[MANIFEST_REGEX])
+      @playlist_hash[manifest(file)] << file
     end
 
     def timeline
