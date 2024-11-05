@@ -9,7 +9,8 @@ module StreamMerger
 
     def initialize
       @playlist_hash = {}
-      @black_file = "./black_screen_stream/black.m3u8"
+      @merged_instructions = []
+      @stream_name = SecureRandom.hex
     end
 
     def playlists
@@ -25,18 +26,23 @@ module StreamMerger
     def build_instructions
       timeline.map do |start_time, end_time|
         concurrent(start_time, end_time).map do |p|
-          { file: p.file, start_seconds: p.start_seconds(start_time), end_seconds: p.end_seconds(end_time),
-            width: p.width, height: p.height }
+          start_seconds = p.start_seconds(start_time)
+          end_seconds = p.end_seconds(end_time)
+          { file: p.file, start_seconds:, end_seconds:, width: p.width, height: p.height }
         end
       end
     end
 
     def execute_instructions
-      stream_name = SecureRandom.hex
       instruction_set = build_instructions
       instruction_set.each_with_index do |instructions, idx|
-        merge_streams(instructions, "#{stream_name}_#{idx}.m3u8")
+        next if @merged_instructions.include?(instructions)
+
+        output = "#{@stream_name}_#{idx}M.m3u8"
+        merge_streams(instructions, output)
+        @merged_instructions << instructions
       end
+      playlists.each(&:merge!)
     end
 
     private
@@ -54,12 +60,13 @@ module StreamMerger
       playlists.map { |p| [p.start_time, p.end_time] }
                .flatten
                .sort
+               .uniq
                .each_cons(2)
                .to_a
     end
 
     def concurrent(start_time, end_time)
-      playlists.select { |p| p.start_time <= start_time && p.end_time >= end_time }
+      playlists.select { |p| p.start_time < end_time && p.end_time > start_time }
     end
 
     def manifest(file)

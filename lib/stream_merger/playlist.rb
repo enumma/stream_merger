@@ -6,7 +6,7 @@ module StreamMerger
     require "tempfile"
     include Utils
 
-    attr_reader :file_name, :file, :segments, :width, :height
+    attr_reader :file_name, :file, :segments, :width, :height, :start_time
 
     def initialize(file_name:)
       @file_name = file_name
@@ -18,11 +18,8 @@ module StreamMerger
       remove_duplicates
       sort_segments
       set_resolution
+      @start_time ||= segments.first.start_time
       @segments
-    end
-
-    def start_time
-      segments.first.start_time
     end
 
     def end_time
@@ -39,6 +36,10 @@ module StreamMerger
       return segments.sum(&:duration) if timestamp >= end_time
 
       timestamp - start_time
+    end
+
+    def merge!
+      @start_time = segments.last.end_time
     end
 
     private
@@ -72,9 +73,10 @@ module StreamMerger
     end
 
     def body
-      segments.map do |segment|
+      str = segments.map do |segment|
         "#EXTINF:#{segment.duration},\n#{segment.file}"
       end.join("\n")
+      "#{str}\n#EXT-X-ENDLIST"
     end
 
     def tempfile

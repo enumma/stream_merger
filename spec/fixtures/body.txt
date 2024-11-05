@@ -1,2 +1,3 @@
 #EXTINF:6.202011,
 /Users/mauriciomurga/rails_projects/enumma/stream_merger/spec/fixtures/ewbmlXE8Py7L-2024-11-01_19-51-01.198000000000.ts
+#EXT-X-ENDLIST
