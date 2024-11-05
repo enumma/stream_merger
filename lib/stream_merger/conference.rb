@@ -28,9 +28,12 @@ module StreamMerger
         concurrent(start_time, end_time).map do |p|
           start_seconds = p.start_seconds(start_time)
           end_seconds = p.end_seconds(end_time)
-          { file: p.file, start_seconds:, end_seconds:, width: p.width, height: p.height }
-        end
-      end
+          unless start_seconds.zero? && end_seconds.zero?
+            { file: p.file, start_seconds:, end_seconds:, width: p.width,
+              height: p.height }
+          end
+        end.compact
+      end.reject(&:empty?)
     end
 
     def execute_instructions
@@ -42,7 +45,6 @@ module StreamMerger
         merge_streams(instructions, output)
         @merged_instructions << instructions
       end
-      playlists.each(&:merge!)
     end
 
     private
@@ -52,7 +54,7 @@ module StreamMerger
     def add_to_hash(file)
       raise ArgumentError, "Invalid HLS file: #{file}" unless file.end_with?(".ts")
 
-      @playlist_hash[manifest(file)] ||= Playlist.new(file_name: File.basename(file)[MANIFEST_REGEX])
+      @playlist_hash[manifest(file)] ||= Playlist.new(file_name: file_name(file))
       @playlist_hash[manifest(file)] << file
     end
 
@@ -69,8 +71,12 @@ module StreamMerger
       playlists.select { |p| p.start_time < end_time && p.end_time > start_time }
     end
 
+    def file_name(file)
+      File.basename(file)[MANIFEST_REGEX]
+    end
+
     def manifest(file)
-      "#{File.basename(file)[MANIFEST_REGEX]}.m3u8"
+      "#{file_name(file)}.m3u8"
     end
   end
 end

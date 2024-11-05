@@ -38,8 +38,8 @@ module StreamMerger
       timestamp - start_time
     end
 
-    def merge!
-      @start_time = segments.last.end_time
+    def merge!(duration)
+      @start_time += duration
     end
 
     private
