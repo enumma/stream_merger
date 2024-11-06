@@ -9,13 +9,26 @@ module StreamMerger
 
     def initialize(file:, start_time: file_timestamp(file))
       @file = file
+
       @start_time = start_time
       set_data
     end
 
+    def seconds(timestamp)
+      timestamp - start_time
+    end
+
+    # def mkv
+    #   return @mkv if @mkv
+
+    #   @mkv ||= Tempfile.new([file, ".mkv"])
+    #   `ffmpeg -i "#{file}" -c:v copy -c:a copy "#{@mkv.path}"`
+    #   @mkv
+    # end
+
     private
 
-    attr_reader :timestamp
+    attr_reader :timestamp, :tmp
 
     def set_data
       @timestamp = file_timestamp(file)

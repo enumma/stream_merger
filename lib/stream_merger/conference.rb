@@ -13,6 +13,7 @@ module StreamMerger
       @playlist_hash = {}
       @merged_instructions = []
       @stream_name = SecureRandom.hex
+      @stream_name = "aout"
     end
 
     def playlists
@@ -28,13 +29,13 @@ module StreamMerger
     def build_instructions
       timeline.map do |start_time, end_time|
         concurrent(start_time, end_time).map do |p|
-          start_seconds = p.start_seconds
-          end_seconds = p.end_seconds(end_time)
-          next if end_seconds <= start_seconds
+          segment = p.segment(start_time, end_time)
+          file = segment.file
+          start_seconds = segment.seconds(start_time)
+          end_seconds = segment.seconds(end_time)
+          next if end_seconds < start_seconds
 
-          p.shift_start_time(end_seconds)
-
-          { file: p.file, start_seconds:, end_seconds:, width: p.width,
+          { file:, start_seconds:, end_seconds:, width: p.width,
             height: p.height }
         end.compact
       end.reject(&:empty?)
@@ -45,7 +46,9 @@ module StreamMerger
       instruction_set.each_with_index do |instructions, idx|
         next if @merged_instructions.include?(instructions)
 
-        output = "#{@stream_name}_#{idx}M.m3u8"
+        # output = "#{@stream_name}_#{idx}M.m3u8"
+
+        output = "#{@stream_name}M.m3u8"
         merge_streams(instructions, output)
         @merged_instructions << instructions
       end
@@ -63,7 +66,7 @@ module StreamMerger
     end
 
     def timeline
-      playlists.map { |p| [p.shifted_start_time, p.end_time] }
+      playlists.map { |p| p.segments.map { |s| [s.start_time, s.end_time] }.flatten.uniq }
                .flatten
                .sort
                .uniq

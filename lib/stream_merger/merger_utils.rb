@@ -46,6 +46,7 @@ module StreamMerger
     def base_ffmpeg_command(input_files, filter_complex, output = "output.m3u8")
       <<~CMD
         ffmpeg #{input_files} \
+          -err_detect aggressive \
           -filter_complex "#{filter_complex}" \
           -map "[video]" -map "[audio]" -flags +global_header -c:v libx264 \
           -tune zerolatency -preset veryfast -max_delay 500000 -b:v 8000k -bufsize 16000k -r 30 -g 60 \
@@ -61,7 +62,7 @@ module StreamMerger
       input_commands = streams.each_with_index.map do |stream, index|
         instruction = instructions[index]
         start_time = instruction[:start_seconds]
-        "-ss #{start_time} -i \"#{stream}\" -to #{instruction[:end_seconds]}"
+        "-ss '#{start_time}' -i \"#{stream}\" -to #{instruction[:end_seconds]}"
       end
       input_commands.join(" ")
     end
