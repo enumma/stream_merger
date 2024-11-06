@@ -6,7 +6,7 @@ module StreamMerger
     require "tempfile"
     include Utils
 
-    attr_reader :file_name, :file, :segments, :width, :height, :start_time
+    attr_reader :file_name, :file, :segments, :width, :height, :shifted_start_time, :start_time
 
     def initialize(file_name:)
       @file_name = file_name
@@ -19,6 +19,7 @@ module StreamMerger
       sort_segments
       set_resolution
       @start_time ||= segments.first.start_time
+      @shifted_start_time ||= @start_time
       @segments
     end
 
@@ -26,20 +27,20 @@ module StreamMerger
       segments.last.end_time
     end
 
-    def start_seconds(timestamp)
-      return 0 if timestamp <= start_time
-
-      timestamp - start_time
+    def start_seconds
+      shifted_start_time - start_time
     end
 
     def end_seconds(timestamp)
-      return segments.sum(&:duration) if timestamp >= end_time
-
       timestamp - start_time
     end
 
-    def merge!(duration)
-      @start_time += duration
+    def shift_start_time(merged_seconds)
+      @shifted_start_time = start_time + merged_seconds
+    end
+
+    def merged?
+      @seconds_merged == (end_time - start_time)
     end
 
     private

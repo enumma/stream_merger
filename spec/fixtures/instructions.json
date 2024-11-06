@@ -2,7 +2,7 @@
     [
         {
             "file": "./spec/fixtures/ewbmlXE8Py7L-2024-11-01_19-51-01.198.m3u8",
-            "start_seconds": 0,
+            "start_seconds": 0.0,
             "end_seconds": 0.747,
             "width": 288,
             "height": 352
@@ -18,7 +18,7 @@
         },
         {
             "file": "./spec/fixtures/ZqueuFbL1FQj-2024-11-01_19-51-01.945.m3u8",
-            "start_seconds": 0,
+            "start_seconds": 0.0,
             "end_seconds": 31.942077,
             "width": 352,
             "height": 288

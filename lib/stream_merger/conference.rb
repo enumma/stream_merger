@@ -7,6 +7,8 @@ module StreamMerger
     include MergerUtils
     MANIFEST_REGEX = /.+\d{4}-\d{2}-\d{2}_\d{2}-\d{2}-\d{2}\.\d{3}/
 
+    attr_reader :merged_instructions
+
     def initialize
       @playlist_hash = {}
       @merged_instructions = []
@@ -26,12 +28,14 @@ module StreamMerger
     def build_instructions
       timeline.map do |start_time, end_time|
         concurrent(start_time, end_time).map do |p|
-          start_seconds = p.start_seconds(start_time)
+          start_seconds = p.start_seconds
           end_seconds = p.end_seconds(end_time)
-          unless start_seconds.zero? && end_seconds.zero?
-            { file: p.file, start_seconds:, end_seconds:, width: p.width,
-              height: p.height }
-          end
+          next if end_seconds <= start_seconds
+
+          p.shift_start_time(end_seconds)
+
+          { file: p.file, start_seconds:, end_seconds:, width: p.width,
+            height: p.height }
         end.compact
       end.reject(&:empty?)
     end
@@ -59,7 +63,7 @@ module StreamMerger
     end
 
     def timeline
-      playlists.map { |p| [p.start_time, p.end_time] }
+      playlists.map { |p| [p.shifted_start_time, p.end_time] }
                .flatten
                .sort
                .uniq

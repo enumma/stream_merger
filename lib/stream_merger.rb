@@ -42,15 +42,11 @@ module StreamMerger
       files << file_b
       files = files.compact
       conference.update(files.map { |f| File.expand_path(f) })
-      puts conference.build_instructions.inspect
       conference.execute_instructions
-      if i == 1
-        byebug
-        raise "wa"
-      end
 
       sleep 0.5 # simulate latency
       i += 1
     end
+    puts conference.merged_instructions.inspect
   end
 end
