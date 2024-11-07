@@ -22,7 +22,7 @@ module StreamMerger
       return @mkv if @mkv
 
       @mkv ||= Tempfile.new([SecureRandom.hex, ".mkv"])
-      `ffmpeg -y -i "#{file}" -c:v copy -c:a copy "#{@mkv.path}"`
+      `ffmpeg -hide_banner -loglevel error -y -i "#{file}" -c:v copy -c:a copy "#{@mkv.path}"`
       @mkv
     end
 

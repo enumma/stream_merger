@@ -18,7 +18,6 @@ module StreamMerger
     end
 
     def ffmpeg_duration(url)
-      warn "ffmpeg_duration is not accurate"
       `ffmpeg -i "#{url}" 2>&1 | grep "Duration" | \
          awk '{print $2}' | sed 's/,//g' | \
          awk -F: '{ print ($1 * 3600) + ($2 * 60) + $3 }'`.to_f
@@ -38,7 +37,6 @@ module StreamMerger
     end
 
     def ffmpeg_data(url)
-      warn "ffmpeg_data is not accurate"
       # Execute the ffmpeg command and capture its output
       output = `ffmpeg -i "#{url}" 2>&1`
 
