@@ -137,15 +137,16 @@ module StreamMerger
     end
 
     def run_ffmpeg(command)
-      puts "Executing FFmpeg command: #{command}"
+      # puts "Executing FFmpeg command: #{command}"
       process = IO.popen(command)
-      _pid, status = Process.waitpid2(process.pid)
+      Process.waitpid2(process.pid)
+      # _pid, status = Process.waitpid2(process.pid)
 
-      if status.success?
-        puts "FFmpeg completed successfully."
-      else
-        puts "FFmpeg failed with exit status: #{status.exitstatus}"
-      end
+      # if status.success?
+      #   puts "FFmpeg completed successfully."
+      # else
+      #   puts "FFmpeg failed with exit status: #{status.exitstatus}"
+      # end
     end
   end
 end
