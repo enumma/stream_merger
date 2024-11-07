@@ -1,12 +1,16 @@
 # frozen_string_literal: true
 
+require "aws-sdk-s3"
 require "active_support/time"
 require "json"
 require_relative "stream_merger/merger_utils"
 require_relative "stream_merger/utils"
 require_relative "stream_merger/conference"
+require_relative "stream_merger/configuration"
+require_relative "stream_merger/file_loader"
 require_relative "stream_merger/playlist"
 require_relative "stream_merger/segment"
+require_relative "stream_merger/runner"
 require_relative "stream_merger/tester"
 require_relative "stream_merger/version"
 

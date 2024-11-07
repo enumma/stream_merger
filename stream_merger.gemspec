@@ -33,6 +33,8 @@ Gem::Specification.new do |spec|
 
   # Uncomment to register a new dependency of your gem
   spec.add_development_dependency "byebug"
+  spec.add_development_dependency "dotenv"
+  spec.add_development_dependency "rexml"
   spec.add_dependency "activesupport"
   spec.add_dependency "aws-sdk-s3"
 

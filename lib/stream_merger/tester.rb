@@ -12,7 +12,7 @@ module StreamMerger
       @conference = StreamMerger::Conference.new
     end
 
-    def merge
+    def run
       @files = []
       i = 0
       loop do
@@ -20,10 +20,12 @@ module StreamMerger
         next if execute_instructions
         break if i >= 10
 
-        i += 1
         conference.add_black_screen
+        i += 1
       end
     end
+
+    private
 
     def execute_instructions
       conference.update(expand_files(@files)) && conference.execute_instructions

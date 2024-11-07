@@ -3,6 +3,6 @@
 module StreamMerger
   # Configuration
   class Configuration
-    attr_accessor :s3_credentials
+    attr_accessor :s3_credentials, :streams_bucket
   end
 end

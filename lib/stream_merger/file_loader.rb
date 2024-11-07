@@ -8,16 +8,22 @@ module StreamMerger
       @streams_bucket = @s3_resource.bucket(ENV.fetch("S3_STREAMS_BUCKET"))
     end
 
-    def files
-      s3_objects.select { |s| s.key.end_with?("ts") }.first&.public_url
+    def files(stream_ids)
+      urls = []
+      s3_objects(stream_ids).each do |collection|
+        urls += collection.map(&:public_url)
+      end
+      urls
     end
 
     private
 
     attr_reader :s3_resource, :streams_bucket
 
-    def s3_objects
-      streams_bucket.objects(prefix: "streams/#{stream_id}")
+    def s3_objects(stream_ids)
+      stream_ids.map do |stream_id|
+        streams_bucket.objects(prefix: "streams/#{stream_id}").select { |s| s.key.match(".ts") }
+      end
     end
   end
 end
