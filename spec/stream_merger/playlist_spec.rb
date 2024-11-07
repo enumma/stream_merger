@@ -17,19 +17,6 @@ RSpec.describe StreamMerger::Playlist do
   end
 
   it "does not repeat segments" do
-    segments = playlist << file1
-    expect(segments.size).to eq 1
-  end
-
-  it "creates a header" do
-    expect(playlist.send(:header)).to eq header
-  end
-
-  it "creates a body" do
-    expect(playlist.send(:body)).to eq body
-  end
-
-  it "creates a tmp file" do
-    expect(playlist.send(:tempfile).read).to eq([header, body].join("\n"))
+    expect(playlist << file1).to eq nil
   end
 end

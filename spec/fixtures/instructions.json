@@ -1,7 +1,7 @@
 [
     [
         {
-            "file": "./spec/fixtures/ewbmlXE8Py7L-2024-11-01_19-51-01.198.m3u8",
+            "file": "",
             "start_seconds": 0.0,
             "end_seconds": 0.747,
             "width": 288,
@@ -10,25 +10,187 @@
     ],
     [
         {
-            "file": "./spec/fixtures/ewbmlXE8Py7L-2024-11-01_19-51-01.198.m3u8",
+            "file": "",
             "start_seconds": 0.747,
-            "end_seconds": 32.689077000000005,
+            "end_seconds": 6.33,
             "width": 288,
             "height": 352
         },
         {
-            "file": "./spec/fixtures/ZqueuFbL1FQj-2024-11-01_19-51-01.945.m3u8",
+            "file": "",
             "start_seconds": 0.0,
-            "end_seconds": 31.942077,
+            "end_seconds": 5.583,
             "width": 352,
             "height": 288
         }
     ],
     [
         {
-            "file": "./spec/fixtures/ewbmlXE8Py7L-2024-11-01_19-51-01.198.m3u8",
-            "start_seconds": 32.689077000000005,
-            "end_seconds": 43.534099,
+            "file": "",
+            "start_seconds": 0.0,
+            "end_seconds": 0.557,
+            "width": 288,
+            "height": 352
+        },
+        {
+            "file": "",
+            "start_seconds": 5.583,
+            "end_seconds": 6.14,
+            "width": 352,
+            "height": 288
+        }
+    ],
+    [
+        {
+            "file": "",
+            "start_seconds": 0.557,
+            "end_seconds": 4.24,
+            "width": 288,
+            "height": 352
+        },
+        {
+            "file": "",
+            "start_seconds": 0.0,
+            "end_seconds": 3.683,
+            "width": 352,
+            "height": 288
+        }
+    ],
+    [
+        {
+            "file": "",
+            "start_seconds": 0.0,
+            "end_seconds": 0.397,
+            "width": 288,
+            "height": 352
+        },
+        {
+            "file": "",
+            "start_seconds": 3.683,
+            "end_seconds": 4.08,
+            "width": 352,
+            "height": 288
+        }
+    ],
+    [
+        {
+            "file": "",
+            "start_seconds": 0.397,
+            "end_seconds": 6.25,
+            "width": 288,
+            "height": 352
+        },
+        {
+            "file": "",
+            "start_seconds": 0.0,
+            "end_seconds": 5.853,
+            "width": 352,
+            "height": 288
+        }
+    ],
+    [
+        {
+            "file": "",
+            "start_seconds": 0.0,
+            "end_seconds": 0.287,
+            "width": 288,
+            "height": 352
+        },
+        {
+            "file": "",
+            "start_seconds": 5.853,
+            "end_seconds": 6.14,
+            "width": 352,
+            "height": 288
+        }
+    ],
+    [
+        {
+            "file": "",
+            "start_seconds": 0.287,
+            "end_seconds": 4.17,
+            "width": 288,
+            "height": 352
+        },
+        {
+            "file": "",
+            "start_seconds": 0.0,
+            "end_seconds": 3.883,
+            "width": 352,
+            "height": 288
+        }
+    ],
+    [
+        {
+            "file": "",
+            "start_seconds": 0.187,
+            "end_seconds": 6.23,
+            "width": 288,
+            "height": 352
+        },
+        {
+            "file": "",
+            "start_seconds": 0.0,
+            "end_seconds": 6.043,
+            "width": 352,
+            "height": 288
+        }
+    ],
+    [
+        {
+            "file": "",
+            "start_seconds": 0.057,
+            "end_seconds": 4.147,
+            "width": 288,
+            "height": 352
+        },
+        {
+            "file": "",
+            "start_seconds": 0.0,
+            "end_seconds": 4.09,
+            "width": 352,
+            "height": 288
+        }
+    ],
+    [
+        {
+            "file": "",
+            "start_seconds": 0.0,
+            "end_seconds": 1.777,
+            "width": 288,
+            "height": 352
+        },
+        {
+            "file": "",
+            "start_seconds": 0.073,
+            "end_seconds": 1.85,
+            "width": 352,
+            "height": 288
+        }
+    ],
+    [
+        {
+            "file": "",
+            "start_seconds": 1.777,
+            "end_seconds": 6.2,
+            "width": 288,
+            "height": 352
+        }
+    ],
+    [
+        {
+            "file": "",
+            "start_seconds": 0.0,
+            "end_seconds": 4.2,
+            "width": 288,
+            "height": 352
+        }
+    ],
+    [
+        {
+            "file": "",
+            "start_seconds": 0.0,
+            "end_seconds": 4.33,
             "width": 288,
             "height": 352
         }

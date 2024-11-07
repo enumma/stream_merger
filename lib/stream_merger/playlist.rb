@@ -6,7 +6,7 @@ module StreamMerger
     require "tempfile"
     include Utils
 
-    attr_reader :file_name, :file, :segments, :width, :height
+    attr_reader :segments, :width, :height, :file_name
 
     def initialize(file_name:)
       @file_name = file_name
@@ -14,10 +14,10 @@ module StreamMerger
     end
 
     def <<(file)
-      @segments << build_segment(file)
-      remove_duplicates
-      sort_segments
-      set_resolution
+      segment = build_segment(file)
+      return nil unless segment
+
+      @segments << segment
       @segments
     end
 
@@ -37,53 +37,27 @@ module StreamMerger
 
     attr_reader :tmp
 
-    def remove_duplicates
-      segments.uniq!(&:file)
-    end
-
-    def sort_segments
-      segments.sort_by!(&:file)
-    end
-
     def build_segment(file)
-      return Segment.new(file:) if segments.empty?
+      if segments.empty?
+        self.resolution = file
+        return Segment.new(file:)
+      end
+
+      return nil if files.include?(file)
 
       Segment.new(file:, start_time: segments.last.end_time)
     end
 
-    def header
-      max_duration = segments.max { |s| s.duration }&.duration&.to_i # rubocop:disable Style/SymbolProc
-      <<~HEADER.chomp
-        #EXTM3U
-        #EXT-X-VERSION:3
-        #EXT-X-TARGETDURATION:#{max_duration}
-        #EXT-X-MEDIA-SEQUENCE:0
-        #EXT-X-PLAYLIST-TYPE:EVENT
-        #EXT-X-DISCONTINUITY
-      HEADER
+    def files
+      segments.map(&:file)
     end
 
-    def body
-      str = segments.map do |segment|
-        "#EXTINF:#{segment.duration},\n#{segment.file}"
-      end.join("\n")
-      "#{str}\n#EXT-X-ENDLIST"
-    end
-
-    def tempfile
-      @tmp ||= Tempfile.new([file_name, ".m3u8"])
-      tmp.write([header, body].join("\n"))
-      tmp.rewind
-      tmp
-    end
-
-    def set_resolution
-      @file = tempfile.path
+    def resolution=(file)
       return if @width && @height
 
-      resolution = ffmpeg_resolution(file)
-      @width = resolution[:width]
-      @height = resolution[:height]
+      h = ffmpeg_resolution(file)
+      @width = h[:width]
+      @height = h[:height]
     end
   end
 end

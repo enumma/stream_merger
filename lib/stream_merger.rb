@@ -22,31 +22,35 @@ module StreamMerger
     end
   end
 
-  def self.merge
-    require "byebug"
-    first_name = "ewbmlXE8Py7L-2024-11-01_19-51-01.198"
-    second_name = "ZqueuFbL1FQj-2024-11-01_19-51-01.945"
-    files = []
-    conference = StreamMerger::Conference.new
-    i = 0
-    loop do
-      file_a = Dir.glob("./spec/fixtures/*").select do |f|
-        f.match(first_name) && f.end_with?(".ts") && !files.include?(f)
-      end.first
-      file_b = Dir.glob("./spec/fixtures/*").select do |f|
-        f.match(second_name) && f.end_with?(".ts") && !files.include?(f)
-      end.first
-      break if file_a.nil? && file_b.nil?
+  # def self.merge
+  #   require "byebug"
+  #   first_name = "ewbmlXE8Py7L-2024-11-01_19-51-01.198"
+  #   second_name = "ZqueuFbL1FQj-2024-11-01_19-51-01.945"
+  #   files = []
+  #   conference = StreamMerger::Conference.new
+  #   i = 0
+  #   loop do
+  #     file_a = Dir.glob("./spec/fixtures/*").select do |f|
+  #       f.match(first_name) && f.end_with?(".ts") && !files.include?(f)
+  #     end.first
+  #     file_b = Dir.glob("./spec/fixtures/*").select do |f|
+  #       f.match(second_name) && f.end_with?(".ts") && !files.include?(f)
+  #     end.first
 
-      files << file_a
-      files << file_b
-      files = files.compact
-      conference.update(files.map { |f| File.expand_path(f) })
-      conference.execute_instructions
+  #     files << file_a
+  #     files << file_b
+  #     files = files.compact
+  #     if conference.update(files.map { |f| File.expand_path(f) })
+  #       conference.execute_instructions
+  #     else
+  #       break if i >= 10
 
-      sleep 0.5 # simulate latency
-      i += 1
-    end
-    puts conference.merged_instructions.inspect
-  end
+  #       i += 1
+  #       conference.add_black_screen
+  #     end
+
+  #     sleep 0.5 # simulate latency
+  #   end
+  #   puts conference.merged_instructions.inspect
+  # end
 end
