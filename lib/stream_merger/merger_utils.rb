@@ -60,8 +60,7 @@ module StreamMerger
     def base_ffmpeg_command(input_files, filter_complex, output = "output")
       <<~CMD
         ffmpeg #{input_files} \
-          -err_detect aggressive \
-          -filter_complex "#{filter_complex}" \
+          -y -filter_complex "#{filter_complex}" \
           -map "[video]" -map "[audio]" -flags +global_header -c:v libx264 \
           -tune zerolatency -preset veryfast -max_delay 500000 -b:v 8000k -bufsize 16000k -r 30 -g 60 \
           -c:a aac -b:a 128k -ar 44100 \
