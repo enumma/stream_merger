@@ -12,8 +12,7 @@ module StreamMerger
     def initialize
       @playlist_hash = {}
       @merged_instructions = []
-      @stream_name = SecureRandom.hex
-      @stream_name = "aout"
+      @last_file = nil
     end
 
     def playlists
@@ -43,11 +42,19 @@ module StreamMerger
 
     def execute_instructions
       instruction_set = build_instructions
+      l = instruction_set.size
       instruction_set.each_with_index do |instructions, idx|
         next if @merged_instructions.include?(instructions)
 
         merge_streams(instructions, "output_#{idx}")
         @merged_instructions << instructions
+        next if @last_file == "output_#{idx}" && !@last_file.nil?
+
+        @last_file = "output_#{idx}"
+
+        filelist.rewind
+        filelist.write("file output_#{idx}.mkv\n")
+        filelist.rewind
       end
     end
 
@@ -81,6 +88,10 @@ module StreamMerger
 
     def manifest(file)
       "#{file_name(file)}.m3u8"
+    end
+
+    def filelist
+      @filelist ||= File.open("./filelist_#{SecureRandom.hex}.txt", "a")
     end
   end
 end
