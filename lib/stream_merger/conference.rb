@@ -30,7 +30,7 @@ module StreamMerger
       timeline.map do |start_time, end_time|
         concurrent(start_time, end_time).map do |p|
           segment = p.segment(start_time, end_time)
-          file = segment.mkv.path
+          file = segment.file
           start_seconds = segment.seconds(start_time)
           end_seconds = segment.seconds(end_time)
           next if (end_seconds - start_seconds) < 0.09
