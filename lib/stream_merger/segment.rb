@@ -21,8 +21,10 @@ module StreamMerger
     # def mkv
     #   return @mkv if @mkv
 
-    #   @mkv ||= Tempfile.new([file, ".mkv"])
-    #   `ffmpeg -i "#{file}" -c:v copy -c:a copy "#{@mkv.path}"`
+    #   sleep 0.5
+    #   f = File.open("./#{File.basename(file)[Conference::MANIFEST_REGEX]}#{Time.now.to_i}.mkv", "w")
+    #   @mkv ||= f
+    #   `ffmpeg -y -i "#{file}" -c:v copy -c:a copy "#{@mkv.path}"`
     #   @mkv
     # end
 
@@ -32,7 +34,8 @@ module StreamMerger
 
     def set_data
       @timestamp = file_timestamp(file)
-      @duration = ffmpeg_exact_duration(file)
+      # @duration = ffmpeg_duration(mkv.path).round(4)
+      @duration = ffmpeg_duration(file).round(4)
       @end_time = start_time + duration.seconds
     end
   end

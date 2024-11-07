@@ -43,7 +43,23 @@ module StreamMerger
       run_ffmpeg(cmd)
     end
 
+    # def base_ffmpeg_command(input_files, filter_complex, output = "output.m3u8")
+    #   <<~CMD
+    #     ffmpeg #{input_files} \
+    #       -err_detect aggressive \
+    #       -filter_complex "#{filter_complex}" \
+    #       -map "[video]" -map "[audio]" -flags +global_header -c:v libx264 \
+    #       -tune zerolatency -preset veryfast -max_delay 500000 -b:v 8000k -bufsize 16000k -r 30 -g 60 \
+    #       -c:a aac -b:a 128k -ar 44100 \
+    #       -f hls -hls_time 5 \
+    #       -hls_playlist_type event \
+    #       -hls_flags delete_segments+append_list #{output}
+    #   CMD
+    # end
+
     def base_ffmpeg_command(input_files, filter_complex, output = "output.m3u8")
+      sleep 0.5
+      file = "a#{Time.now.to_i}"
       <<~CMD
         ffmpeg #{input_files} \
           -err_detect aggressive \
@@ -51,9 +67,7 @@ module StreamMerger
           -map "[video]" -map "[audio]" -flags +global_header -c:v libx264 \
           -tune zerolatency -preset veryfast -max_delay 500000 -b:v 8000k -bufsize 16000k -r 30 -g 60 \
           -c:a aac -b:a 128k -ar 44100 \
-          -f hls -hls_time 5 \
-          -hls_playlist_type event \
-          -hls_flags delete_segments+append_list #{output}
+          #{file}.mkv
       CMD
     end
 
@@ -62,7 +76,7 @@ module StreamMerger
       input_commands = streams.each_with_index.map do |stream, index|
         instruction = instructions[index]
         start_time = instruction[:start_seconds]
-        "-ss '#{start_time}' -i \"#{stream}\" -to #{instruction[:end_seconds]}"
+        "-i \"#{stream}\" -ss '#{start_time}' -to #{instruction[:end_seconds]}"
       end
       input_commands.join(" ")
     end

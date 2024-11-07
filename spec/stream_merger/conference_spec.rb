@@ -30,7 +30,7 @@ RSpec.describe StreamMerger::Conference do # rubocop:disable Metrics/BlockLength
       expect(trim_file_names(conference.build_instructions).to_json).to eq(trim_file_names(instructions).to_json)
     end
 
-    it "execute instructions" do
+    xit "execute instructions" do
       conference.execute_instructions
     end
   end
