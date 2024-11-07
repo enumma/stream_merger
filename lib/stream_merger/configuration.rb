@@ -3,6 +3,6 @@
 module StreamMerger
   # Configuration
   class Configuration
-    attr_accessor :output_uri
+    attr_accessor :s3_credentials
   end
 end
