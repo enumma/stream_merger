@@ -75,8 +75,10 @@ module StreamMerger
       streams = instructions.map { |instruction| instruction[:file] }
       input_commands = streams.each_with_index.map do |stream, index|
         instruction = instructions[index]
-        start_time = instruction[:start_seconds]
-        "-i \"#{stream}\" -ss '#{start_time}' -to #{instruction[:end_seconds]}"
+        start_seconds = instruction[:start_seconds]
+        end_seconds = instruction[:end_seconds]
+        duration = end_seconds - start_seconds
+        "-ss '#{start_seconds}' -i \"#{stream}\" -t #{duration}"
       end
       input_commands.join(" ")
     end
