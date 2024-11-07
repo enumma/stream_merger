@@ -38,28 +38,12 @@ module StreamMerger
        { w: OUTPUT_W / 2, h: OUTPUT_H / 2, o: :vertical }]
     ].freeze
 
-    def merge_streams(instructions, output = "output.m3u8")
+    def merge_streams(instructions, output = "output")
       cmd = base_ffmpeg_command(inputs(instructions), generate_grid_filter(instructions), output)
       run_ffmpeg(cmd)
     end
 
-    def base_ffmpeg_command(input_files, filter_complex, output = "output.m3u8")
-      <<~CMD
-        ffmpeg #{input_files} \
-          -err_detect aggressive \
-          -filter_complex "#{filter_complex}" \
-          -map "[video]" -map "[audio]" -flags +global_header -c:v libx264 \
-          -tune zerolatency -preset veryfast -max_delay 500000 -b:v 8000k -bufsize 16000k -r 30 -g 60 \
-          -c:a aac -b:a 128k -ar 44100 \
-          -f hls -hls_time 5 \
-          -hls_playlist_type event \
-          -hls_flags delete_segments+append_list #{output}
-      CMD
-    end
-
-    # def base_ffmpeg_command(input_files, filter_complex, output = "output.m3u8")
-    #   sleep 0.5
-    #   file = "a#{Time.now.to_i}"
+    # def base_ffmpeg_command(input_files, filter_complex, output = "output")
     #   <<~CMD
     #     ffmpeg #{input_files} \
     #       -err_detect aggressive \
@@ -67,9 +51,23 @@ module StreamMerger
     #       -map "[video]" -map "[audio]" -flags +global_header -c:v libx264 \
     #       -tune zerolatency -preset veryfast -max_delay 500000 -b:v 8000k -bufsize 16000k -r 30 -g 60 \
     #       -c:a aac -b:a 128k -ar 44100 \
-    #       #{file}.mkv
+    #       -f hls -hls_time 5 \
+    #       -hls_playlist_type event \
+    #       -hls_flags delete_segments+append_list #{output}.m3u8
     #   CMD
     # end
+
+    def base_ffmpeg_command(input_files, filter_complex, output = "output")
+      <<~CMD
+        ffmpeg #{input_files} \
+          -err_detect aggressive \
+          -filter_complex "#{filter_complex}" \
+          -map "[video]" -map "[audio]" -flags +global_header -c:v libx264 \
+          -tune zerolatency -preset veryfast -max_delay 500000 -b:v 8000k -bufsize 16000k -r 30 -g 60 \
+          -c:a aac -b:a 128k -ar 44100 \
+          #{output}.mkv
+      CMD
+    end
 
     def inputs(instructions)
       streams = instructions.map { |instruction| instruction[:file] }
@@ -77,7 +75,7 @@ module StreamMerger
         instruction = instructions[index]
         start_seconds = instruction[:start_seconds]
         end_seconds = instruction[:end_seconds]
-        duration = end_seconds - start_seconds
+        duration = (end_seconds - start_seconds).round(3)
         "-ss '#{start_seconds}' -i \"#{stream}\" -t #{duration}"
       end
       input_commands.join(" ")
