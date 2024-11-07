@@ -3,21 +3,21 @@
 module StreamMerger
   # TestUtils
   class Tester
-    FIRST_TEST_FILE = "ewbmlXE8Py7L-2024-11-01_19-51-01.198"
-    SECOND_TEST_FILE = "ZqueuFbL1FQj-2024-11-01_19-51-01.945"
+    FIRST_FILE = "ewbmlXE8Py7L-2024-11-01_19-51-01.198"
+    SECOND_FILE = "ZqueuFbL1FQj-2024-11-01_19-51-01.945"
 
-    attr_reader :conference, :test_files
+    attr_reader :conference, :files
 
     def initialize
       @conference = StreamMerger::Conference.new
     end
 
     def merge
-      @test_files = []
+      @files = []
       i = 0
       loop do
-        add_test_files
-        next if execute_test_instructions
+        add_files
+        next if execute_instructions
         break if i >= 10
 
         i += 1
@@ -25,23 +25,23 @@ module StreamMerger
       end
     end
 
-    def execute_test_instructions
-      conference.update(expand_test_files(@test_files)) && conference.execute_instructions
+    def execute_instructions
+      conference.update(expand_files(@files)) && conference.execute_instructions
     end
 
-    def add_test_files
-      @test_files << get_test_file(FIRST_TEST_FILE)
-      @test_files << get_test_file(SECOND_TEST_FILE)
-      @test_files = @test_files.compact
+    def add_files
+      @files << get_file(FIRST_FILE)
+      @files << get_file(SECOND_FILE)
+      @files = @files.compact
     end
 
-    def expand_test_files(files)
+    def expand_files(files)
       files.map { |f| File.expand_path(f) }
     end
 
-    def get_test_file(file)
+    def get_file(file)
       Dir.glob("./spec/fixtures/*").select do |f|
-        f.match(file) && f.end_with?(".ts") && !test_files.include?(f)
+        f.match(file) && f.end_with?(".ts") && !files.include?(f)
       end.first
     end
   end
