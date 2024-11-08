@@ -11,7 +11,13 @@ StreamMerger.configure do |config|
   }
   config.streams_bucket = ENV.fetch("S3_STREAMS_BUCKET")
 end
-# Run merger
-runner = StreamMerger::Runner.new
-runner.stream_ids = %w[ewbmlXE8Py7L ZqueuFbL1FQj]
-runner.run
+
+# Start the runner in the background
+runner = StreamMerger::Runner.new(["wVtG6250NtC5"])
+runner.start
+
+# Add streams dynamically while `run` is executing
+runner.add_stream("Rpk4IP1Ss1A5")
+
+# Stop the runner when done
+# runner.stop
