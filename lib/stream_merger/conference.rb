@@ -63,7 +63,7 @@ module StreamMerger
     end
 
     def create_mp4
-      raise "file does not exist" unless File.exist?(filelist.path)
+      raise Error, "File does not exist" unless File.exist?(filelist.path)
 
       command = "ffmpeg -f concat -safe 0 -i '#{filelist.path}' -c copy ./lib/tmp/output_#{@conference_id}.mp4"
       process = IO.popen(command)
@@ -75,7 +75,7 @@ module StreamMerger
     attr_reader :playlist_hash, :instructions, :filelist, :local_files
 
     def add_to_hash(file)
-      raise ArgumentError, "Invalid HLS file: #{file}" unless file.end_with?(".ts")
+      raise Error, "Invalid HLS file: #{file}" unless file.end_with?(".ts")
 
       @playlist_hash[manifest(file)] ||= Playlist.new(file_name: file_name(file))
       @playlist_hash[manifest(file)] << file

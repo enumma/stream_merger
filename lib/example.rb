@@ -13,20 +13,21 @@ StreamMerger.configure do |config|
   config.streams_bucket = ENV.fetch("S3_STREAMS_BUCKET")
 end
 
-# Start the runner in the background
+# Initialize runner
 runner = StreamMerger::Runner.new(["wVtG6250NtC5"])
-puts "Starting!"
+# Start the runner in the background
 runner.start
-
 # Add streams dynamically while `run` is executing
 runner.add_stream("Rpk4IP1Ss1A5")
+# Wait process to finish
 loop do
   break unless runner.running?
 end
-
-# Stop the runner when done
-puts "Finished!"
+# Ensure thread completes
 runner.stop
 
-runner.create_mp4
+# Create MP4 if successful
+runner.create_mp4 unless runner.exception
+# Purge local files
 runner.purge!
+raise runner.exception if runner.exception

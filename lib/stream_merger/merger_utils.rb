@@ -125,7 +125,7 @@ module StreamMerger
     end
 
     def validate_grid_size(size)
-      raise ArgumentError, "Unsupported grid for #{size}" if GRIDS[size - 1].nil?
+      raise Error, "Unsupported grid for #{size}" if GRIDS[size - 1].nil?
     end
 
     def build_crop_filter(stream, index, total_streams)

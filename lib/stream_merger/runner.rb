@@ -3,6 +3,8 @@
 module StreamMerger
   # Runner
   class Runner
+    attr_reader :status, :exception
+
     def initialize(stream_ids = [])
       @stream_ids = stream_ids
       @file_loader = FileLoader.new
@@ -10,6 +12,7 @@ module StreamMerger
       @mutex = Mutex.new # Mutex to safely modify stream_ids
       @running = false
       @loop_breaker = 0
+      @exception = nil
     end
 
     def start
@@ -43,7 +46,7 @@ module StreamMerger
 
     attr_reader :conference, :file_loader, :files, :stream_ids
 
-    def run
+    def run # rubocop:disable Metrics/MethodLength
       return unless @stream_ids.any?
 
       loop do
@@ -53,8 +56,11 @@ module StreamMerger
 
         conference.add_black_screen
         @loop_breaker += 1
-        sleep 1
+        sleep 0.5
       end
+    rescue StandardError => e
+      @exception = e
+    ensure
       @running = false
     end
 
