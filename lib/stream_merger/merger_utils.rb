@@ -57,14 +57,14 @@ module StreamMerger
     #   CMD
     # end
 
-    def base_ffmpeg_command(input_files, filter_complex, output = "output")
+    def base_ffmpeg_command(input_files, filter_complex, output = "output.mkv")
       <<~CMD
         ffmpeg -hide_banner -loglevel error #{input_files} \
           -y -filter_complex "#{filter_complex}" \
           -map "[video]" -map "[audio]" -flags +global_header -c:v libx264 \
           -tune zerolatency -preset veryfast -max_delay 500000 -b:v 8000k -bufsize 16000k -r 30 -g 60 \
           -c:a aac -b:a 128k -ar 44100 \
-          #{output}.mkv
+          #{output}
       CMD
     end
 
@@ -101,8 +101,8 @@ module StreamMerger
     end
 
     def crop_horizontal(width, height)
-      ar_w = height * (OUTPUT_H / OUTPUT_W)
-      ar_h = width * (OUTPUT_W / OUTPUT_H)
+      ar_w = height * (OUTPUT_W / (OUTPUT_H / 2))
+      ar_h = width * ((OUTPUT_H / 2) / OUTPUT_W)
 
       dest_w = height < ar_h ? ar_w : width
       dest_h = width < ar_w ? ar_h : height

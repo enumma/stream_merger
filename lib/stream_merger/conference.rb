@@ -12,7 +12,10 @@ module StreamMerger
     def initialize
       @playlist_hash = {}
       @merged_instructions = []
-      @last_file = nil
+      @merged_files = []
+      @local_files = []
+      @conference_id = SecureRandom.hex
+      @filelist = LocalFile.new("filelist_#{@conference_id}.txt")
     end
 
     def playlists
@@ -40,37 +43,42 @@ module StreamMerger
       instruction_set.each_with_index do |instructions, idx|
         next if @merged_instructions.include?(instructions)
 
-        merge_streams(instructions, "output_#{idx}")
+        local_file = create_merged_file(idx, instructions)
+        next if @merged_files.include?(local_file.path)
+
         @merged_instructions << instructions
-        next if @last_file == "output_#{idx}" && !@last_file.nil?
-
-        @last_file = "output_#{idx}"
-
-        append_to_filelist("file output_#{idx}.mkv\n")
+        @merged_files << local_file.path
+        @local_files << local_file
+        filelist.write("file #{local_file.path}\n")
       end
     end
 
     def add_black_screen
-      append_to_filelist("file ./lib/black_streams/1080x1920.mkv\n")
+      filelist.write("file #{File.expand_path("./lib/black_streams/1080x1920.mkv")}\n")
+    end
+
+    def purge!
+      local_files.each(&:delete)
+      filelist.delete
+    end
+
+    def create_mp4
+      raise "file does not exist" unless File.exist?(filelist.path)
+
+      command = "ffmpeg -f concat -safe 0 -i '#{filelist.path}' -c copy ./lib/tmp/output_#{@conference_id}.mp4"
+      process = IO.popen(command)
+      Process.waitpid2(process.pid)
     end
 
     private
 
-    attr_reader :playlist_hash, :instructions
+    attr_reader :playlist_hash, :instructions, :filelist, :local_files
 
     def add_to_hash(file)
       raise ArgumentError, "Invalid HLS file: #{file}" unless file.end_with?(".ts")
 
       @playlist_hash[manifest(file)] ||= Playlist.new(file_name: file_name(file))
       @playlist_hash[manifest(file)] << file
-    end
-
-    def segments
-      playlists.map(&:segments).flatten
-    end
-
-    def files
-      segments.map(&:file)
     end
 
     def timeline
@@ -80,6 +88,10 @@ module StreamMerger
               .uniq
               .each_cons(2)
               .to_a
+    end
+
+    def segments
+      playlists.map(&:segments).flatten
     end
 
     def concurrent(start_time, end_time)
@@ -94,10 +106,6 @@ module StreamMerger
       "#{file_name(file)}.m3u8"
     end
 
-    def filelist
-      @filelist ||= File.open("./filelist_#{SecureRandom.hex}.txt", "a")
-    end
-
     def build_instruction(playlist, start_time, end_time)
       segment = playlist.segment(start_time, end_time)
       file = segment.mkv.path
@@ -110,10 +118,10 @@ module StreamMerger
         height: playlist.height }
     end
 
-    def append_to_filelist(item)
-      filelist.rewind
-      filelist.write(item)
-      filelist.rewind
+    def create_merged_file(idx, instructions)
+      local_file = LocalFile.new("output_#{@conference_id}_#{idx}.mkv")
+      merge_streams(instructions, local_file.path)
+      local_file
     end
   end
 end

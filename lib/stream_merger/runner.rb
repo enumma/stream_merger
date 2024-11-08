@@ -3,8 +3,6 @@
 module StreamMerger
   # Runner
   class Runner
-    attr_reader :running
-
     def initialize(stream_ids = [])
       @stream_ids = stream_ids
       @file_loader = FileLoader.new
@@ -15,18 +13,30 @@ module StreamMerger
     end
 
     def start
-      return if running
+      return if running?
 
+      @running = true
       @thread = Thread.new { run } # Run in a background thread
     end
 
     def stop
-      @running = false
       @thread&.join # Ensure thread completes
     end
 
     def add_stream(stream_id)
       @mutex.synchronize { @stream_ids << stream_id }
+    end
+
+    def running?
+      @running
+    end
+
+    def create_mp4
+      conference.create_mp4
+    end
+
+    def purge!
+      conference.purge!
     end
 
     private
@@ -36,7 +46,6 @@ module StreamMerger
     def run
       return unless @stream_ids.any?
 
-      @running = true
       loop do
         load_files
         next if execute_instructions
@@ -44,6 +53,7 @@ module StreamMerger
 
         conference.add_black_screen
         @loop_breaker += 1
+        sleep 1
       end
       @running = false
     end

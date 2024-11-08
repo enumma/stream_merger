@@ -3,7 +3,6 @@
 module StreamMerger
   # Playlist
   class Playlist
-    require "tempfile"
     include Utils
 
     attr_reader :segments, :width, :height, :file_name

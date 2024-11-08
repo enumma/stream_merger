@@ -9,6 +9,11 @@ RSpec.describe StreamMerger::Conference do # rubocop:disable Metrics/BlockLength
     before do
       conference.update(files)
     end
+
+    after do
+      conference.purge!
+    end
+
     it "builds two playlists" do
       expect(conference.playlists.size).to eq(2)
     end
