@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 module StreamMerger
-  # TestUtils
+  # Tester
   class Tester
     FIRST_FILE = "ewbmlXE8Py7L-2024-11-01_19-51-01.198"
     SECOND_FILE = "ZqueuFbL1FQj-2024-11-01_19-51-01.945"

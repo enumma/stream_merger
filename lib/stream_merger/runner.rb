@@ -1,17 +1,22 @@
 # frozen_string_literal: true
 
 module StreamMerger
-  # TestUtils
+  # Runner
   class Runner
+    attr_reader :running
+
     def initialize(stream_ids = [])
       @stream_ids = stream_ids
       @file_loader = FileLoader.new
       @conference = StreamMerger::Conference.new
       @mutex = Mutex.new # Mutex to safely modify stream_ids
+      @running = false
+      @loop_breaker = 0
     end
 
     def start
-      @running = true
+      return if running
+
       @thread = Thread.new { run } # Run in a background thread
     end
 
@@ -31,15 +36,16 @@ module StreamMerger
     def run
       return unless @stream_ids.any?
 
-      i = 0
+      @running = true
       loop do
         load_files
         next if execute_instructions
-        break if i >= 10
+        break if @loop_breaker >= 10
 
         conference.add_black_screen
-        i += 1
+        @loop_breaker += 1
       end
+      @running = false
     end
 
     def execute_instructions
