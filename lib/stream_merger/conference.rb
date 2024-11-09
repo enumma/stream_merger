@@ -15,7 +15,7 @@ module StreamMerger
       @merged_files = []
       @local_files = []
       @conference_id = SecureRandom.hex
-      @filelist = LocalFile.new("filelist_#{@conference_id}.txt")
+      fn_concat_init
     end
 
     def playlists
@@ -23,14 +23,17 @@ module StreamMerger
     end
 
     def update(files)
+      puts "update(files)"
       new_file_added = false
       files.each do |file|
+        puts file
         new_file_added = !add_to_hash(file).nil? || new_file_added
       end
       new_file_added
     end
 
     def build_instructions
+      puts "build_instructions"
       timeline.map do |start_time, end_time|
         concurrent(start_time, end_time).map do |playlist|
           build_instruction(playlist, start_time, end_time)
@@ -39,6 +42,7 @@ module StreamMerger
     end
 
     def execute_instructions
+      puts "execute_instructions"
       instruction_set = build_instructions
       instruction_set.each_with_index do |instructions, idx|
         next if @merged_instructions.include?(instructions)
@@ -49,12 +53,14 @@ module StreamMerger
         @merged_instructions << instructions
         @merged_files << local_file.path
         @local_files << local_file
-        filelist.write("file #{local_file.path}\n")
+        puts "1"
+        fn_concat_feed(local_file.path)
       end
     end
 
     def add_black_screen
-      filelist.write("file #{File.expand_path("./lib/black_streams/1080x1920.mkv")}\n")
+      puts "2"
+      fn_concat_feed(File.expand_path("./lib/black_streams/1080x1920.mkv"))
     end
 
     def purge!
@@ -122,6 +128,45 @@ module StreamMerger
       local_file = LocalFile.new("output_#{@conference_id}_#{idx}.mkv")
       merge_streams(instructions, local_file.path)
       local_file
+    end
+
+    def fn_concat_init
+      puts "fn_concat_init"
+      # Create a persistent FIFO for concatenation, initialized once
+      @concat_pls = `mktemp -u -p . concat.XXXXXXXXXX.txt`.chomp
+      @concat_pls.sub!("./", "")
+      `mkfifo "#{@concat_pls}"`
+      puts "concat_pls=#{@concat_pls}"
+
+      # Launch FFmpeg to read from the FIFO and encode to the output file
+      @ffmpeg_process ||= IO.popen("ffmpeg -y -safe 0 -i #{@concat_pls} -pix_fmt yuv422p all.mkv", "w")
+    end
+
+    def fn_concat_feed(file)
+      puts "fn_concat_feed #{file}"
+      puts "writing!"
+      str = "ffconcat version 1.0\nfile '#{file}'\nfile '#{@concat_pls}'"
+      puts str
+      # Write the required information to the FIFO
+      File.open(@concat_pls, "w") do |fifo|
+        fifo.puts str
+      end
+
+      puts "sleep 2"
+      sleep 2
+      puts "Content written to #{@concat_pls}"
+    end
+
+    def fn_concat_end
+      puts "fn_concat_end"
+
+      # Remove the FIFO file at the end
+      if File.exist?(@concat_pls)
+        puts "removing #{@concat_pls}"
+        File.delete(@concat_pls)
+      end
+
+      puts
     end
   end
 end

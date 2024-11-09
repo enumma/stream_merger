@@ -6,9 +6,13 @@ module StreamMerger
     attr_accessor :path
 
     def initialize(file_name, path = "./lib/tmp")
-      @relative_path = "#{path}/#{file_name}"
+      # @relative_path = "#{path}/#{file_name}"
+      # @file = File.open(relative_path, "a") # create empty file
+      # @path = File.expand_path(relative_path)
+
+      @relative_path = file_name
       @file = File.open(relative_path, "a") # create empty file
-      @path = File.expand_path(relative_path)
+      @path = @relative_path
     end
 
     def write(item)
