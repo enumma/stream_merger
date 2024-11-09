@@ -139,7 +139,9 @@ module StreamMerger
       puts "concat_pls=#{@concat_pls}"
 
       # Launch FFmpeg to read from the FIFO and encode to the output file
-      @ffmpeg_process ||= IO.popen("ffmpeg -y -safe 0 -i #{@concat_pls} -pix_fmt yuv422p all.mkv", "w")
+      # @ffmpeg_process ||= IO.popen("ffmpeg -y -safe 0 -i #{@concat_pls} -pix_fmt yuv422p all.mkv", "w")
+      @ffmpeg_process ||= IO.popen("ffmpeg -y -safe 0 -i #{@concat_pls} -preset ultrafast -pix_fmt yuv422p all.mkv",
+                                   "w")
     end
 
     def fn_concat_feed(file)
@@ -152,8 +154,8 @@ module StreamMerger
         fifo.puts str
       end
 
-      puts "sleep 2"
-      sleep 2
+      # puts "sleep 2"
+      # sleep 2
       puts "Content written to #{@concat_pls}"
     end
 
