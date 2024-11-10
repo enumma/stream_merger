@@ -147,7 +147,7 @@ module StreamMerger
     def fn_concat_feed(file)
       puts "fn_concat_feed #{file}"
       puts "writing!"
-      str = "ffconcat version 1.0\nfile '#{file}'\nfile '#{@concat_pls}'"
+      str = "ffconcat version 1.0\nfile '#{file}'\nfile '#{@concat_pls}'\noption safe 0"
       puts str
       # Write the required information to the FIFO
       File.open(@concat_pls, "w") do |fifo|
