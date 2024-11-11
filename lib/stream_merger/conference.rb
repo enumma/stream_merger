@@ -3,18 +3,15 @@
 module StreamMerger
   # Conference
   class Conference
-    require "securerandom"
     include MergerUtils
+    include Concat
     MANIFEST_REGEX = /.+\d{4}-\d{2}-\d{2}_\d{2}-\d{2}-\d{2}\.\d{3}/
-
-    attr_reader :merged_instructions
 
     def initialize
       @playlist_hash = {}
       @merged_instructions = []
       @merged_files = []
       @stream_files = []
-      @conference_id = SecureRandom.hex
       @concat_pls = StreamFile.new(file_name: "concat", extension: ".txt", type: "fifo").path
     end
 
@@ -68,7 +65,7 @@ module StreamMerger
 
     private
 
-    attr_reader :playlist_hash, :instructions, :stream_files
+    attr_reader :merged_instructions, :playlist_hash, :instructions, :stream_files
 
     def add_to_hash(file)
       raise Error, "Invalid HLS file: #{file}" unless file.end_with?(".ts")
@@ -115,22 +112,9 @@ module StreamMerger
     end
 
     def create_merged_file(idx, instructions)
-      stream_file = StreamFile.new(file_name: "output_#{@conference_id}_#{idx}", extension: ".mkv")
+      stream_file = StreamFile.new(file_name: "#{idx}_output", extension: ".mkv")
       merge_streams(instructions, stream_file.path)
       stream_file
-    end
-
-    def fn_concat_feed(file)
-      # @ffmpeg_process ||= IO.popen("ffmpeg -y -safe 0 -i #{@concat_pls} -preset ultrafast -pix_fmt yuv420p -r 30 -c:v libx264 -c:a aac all.mkv",
-      #                              "w")
-      @ffmpeg_process ||= IO.popen(
-        "ffmpeg -y -safe 0 -i #{@concat_pls} -preset ultrafast -pix_fmt yuv420p -r 30 -c:v libx264 -c:a aac -f hls -hls_time 10 -hls_list_size 0 -hls_segment_filename 'segment_%03d.ts' all.m3u8", "w"
-      )
-
-      # Write the required information to the FIFO
-      File.open(@concat_pls, "w") do |fifo|
-        fifo.puts "ffconcat version 1.0\nfile '#{file}'\nfile '#{@concat_pls}'\noption safe 0"
-      end
     end
   end
 end
