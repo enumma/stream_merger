@@ -7,7 +7,7 @@ module StreamMerger
     include Concat
     MANIFEST_REGEX = /.+\d{4}-\d{2}-\d{2}_\d{2}-\d{2}-\d{2}\.\d{3}/
 
-    def initialize(conference_id:)
+    def initialize(conference_id: SecureRandom.hex)
       @playlist_hash = {}
       @merged_instructions = []
       @merged_files = []
