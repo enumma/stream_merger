@@ -10,7 +10,7 @@ module StreamMerger
 
     def initialize(start_time: nil, conference_id: SecureRandom.hex, stream_ids: [])
       @stream_ids = stream_ids
-      @file_loader = FileLoader.new
+      @file_loader = FileLoader.new(start_time:, bucket: StreamMerger.streams_bucket)
       @conference = StreamMerger::Conference.new(conference_id:)
       @mutex = Mutex.new # Mutex to safely modify stream_ids
       @running = false
@@ -76,10 +76,7 @@ module StreamMerger
 
     def load_files
       @mutex.synchronize do
-        if @stream_ids.any?
-          @files = file_loader.files(@stream_ids)
-          @files = @files.select { |f| f.last_modified >= @start_time } if @start_time
-        end
+        @files = file_loader.files(@stream_ids) if @stream_ids.any?
       end
     end
   end
