@@ -32,7 +32,9 @@ module StreamMerger
     end
 
     def add_stream(stream_id)
-      @mutex.synchronize { @stream_ids << stream_id }
+      @mutex.synchronize do
+        @stream_ids << stream_id unless @stream_ids.include?(stream_id)
+      end
     end
 
     def running?
