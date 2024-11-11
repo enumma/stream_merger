@@ -43,5 +43,19 @@ module StreamMerger
 
       configuration.streams_bucket
     end
+
+    def hls_upload_url
+      raise Error, "Empty HLS upload url!" if configuration.hls_upload_url.nil?
+      raise Error, "Invalid HLS upload url" unless valid_url?(configuration.hls_upload_url)
+
+      configuration.hls_upload_url
+    end
+
+    def valid_url?(string)
+      uri = URI.parse(string)
+      uri.is_a?(URI::HTTP) || uri.is_a?(URI::HTTPS)
+    rescue URI::InvalidURIError
+      false
+    end
   end
 end

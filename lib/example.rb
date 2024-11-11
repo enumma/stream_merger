@@ -11,10 +11,11 @@ StreamMerger.configure do |config|
     secret_access_key: ENV.fetch("AWS_SECRET_ACCESS_KEY")
   }
   config.streams_bucket = ENV.fetch("S3_STREAMS_BUCKET")
+  config.hls_upload_url = "http://antmedia.test.enumma.com/WebRTCAppEE/hls-upload/"
 end
 
 # Initialize runner
-runner = StreamMerger::Runner.new(["wVtG6250NtC5"])
+runner = StreamMerger::Runner.new(stream_ids: ["wVtG6250NtC5"])
 # Start the runner in the background
 runner.start
 # Add streams dynamically while `run` is executing

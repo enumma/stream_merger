@@ -7,12 +7,13 @@ module StreamMerger
     include Concat
     MANIFEST_REGEX = /.+\d{4}-\d{2}-\d{2}_\d{2}-\d{2}-\d{2}\.\d{3}/
 
-    def initialize
+    def initialize(conference_id:)
       @playlist_hash = {}
       @merged_instructions = []
       @merged_files = []
       @stream_files = []
       @concat_pls = StreamFile.new(file_name: "concat", extension: ".txt", type: "fifo").path
+      @conference_id = conference_id
     end
 
     def playlists
@@ -59,7 +60,7 @@ module StreamMerger
     def purge!
       stream_files.each(&:delete)
       File.delete(@concat_pls) if File.exist?(@concat_pls)
-      Process.kill("TERM", @ffmpeg_process.pid) if @ffmpeg_process&.pid
+      stop_ffmpeg_process
     end
 
     private

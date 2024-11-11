@@ -8,10 +8,10 @@ module StreamMerger
 
     BREAKER_LIMIT = 150
 
-    def initialize(stream_ids = [])
+    def initialize(conference_id: SecureRandom.hex, stream_ids: [])
       @stream_ids = stream_ids
       @file_loader = FileLoader.new
-      @conference = StreamMerger::Conference.new
+      @conference = StreamMerger::Conference.new(conference_id:)
       @mutex = Mutex.new # Mutex to safely modify stream_ids
       @running = false
       @loop_breaker = 0
