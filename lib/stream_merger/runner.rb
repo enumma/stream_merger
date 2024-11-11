@@ -8,6 +8,7 @@ module StreamMerger
 
     BREAKER_LIMIT = 150
     BLACK_SCREEN_LIMIT = 20
+    HARD_STOP_LIMIT = 20
 
     def initialize(conference_id: SecureRandom.hex, stream_ids: [])
       @stream_ids = stream_ids
@@ -55,14 +56,12 @@ module StreamMerger
 
       loop do
         load_files
-        if execute_instructions
-          @loop_breaker = 0
-          next
-        end
-        break if @loop_breaker >= BREAKER_LIMIT || hard_stop
+        next if execute_instructions
 
-        conference.add_black_screen if @loop_breaker <= BLACK_SCREEN_LIMIT
         @loop_breaker += 1
+        break if hard_stop? || no_data_for_too_long?
+
+        conference.add_black_screen if @loop_breaker >= BLACK_SCREEN_LIMIT
         sleep 0.5
       end
     rescue StandardError => e
@@ -72,13 +71,21 @@ module StreamMerger
     end
 
     def execute_instructions
-      conference.update(@files) && conference.execute_instructions
+      conference.update(@files) && conference.execute_instructions && (@loop_breaker = 0)
     end
 
     def load_files
       @mutex.synchronize do
         @files = file_loader.files(@stream_ids) if @stream_ids.any?
       end
+    end
+
+    def hard_stop?
+      hard_stop && @loop_breaker >= HARD_STOP_LIMIT
+    end
+
+    def no_data_for_too_long?
+      @loop_breaker >= BREAKER_LIMIT
     end
   end
 end
