@@ -26,8 +26,6 @@ end
 # Ensure thread completes
 runner.stop
 
-# Create MP4 if successful
-runner.create_mp4 unless runner.exception
 # Purge local files
 runner.purge!
 raise runner.exception if runner.exception

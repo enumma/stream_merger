@@ -34,10 +34,6 @@ module StreamMerger
       @running
     end
 
-    def create_mp4
-      conference.create_mp4
-    end
-
     def purge!
       conference.purge!
     end

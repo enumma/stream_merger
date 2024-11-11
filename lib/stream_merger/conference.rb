@@ -3,19 +3,16 @@
 module StreamMerger
   # Conference
   class Conference
-    require "securerandom"
     include MergerUtils
+    include Concat
     MANIFEST_REGEX = /.+\d{4}-\d{2}-\d{2}_\d{2}-\d{2}-\d{2}\.\d{3}/
-
-    attr_reader :merged_instructions
 
     def initialize
       @playlist_hash = {}
       @merged_instructions = []
       @merged_files = []
-      @local_files = []
-      @conference_id = SecureRandom.hex
-      @filelist = LocalFile.new("filelist_#{@conference_id}.txt")
+      @stream_files = []
+      @concat_pls = StreamFile.new(file_name: "concat", extension: ".txt", type: "fifo").path
     end
 
     def playlists
@@ -43,36 +40,32 @@ module StreamMerger
       instruction_set.each_with_index do |instructions, idx|
         next if @merged_instructions.include?(instructions)
 
-        local_file = create_merged_file(idx, instructions)
-        next if @merged_files.include?(local_file.path)
+        stream_file = create_merged_file(idx, instructions)
+        next if @merged_files.include?(stream_file.path)
 
         @merged_instructions << instructions
-        @merged_files << local_file.path
-        @local_files << local_file
-        filelist.write("file #{local_file.path}\n")
+        @merged_files << stream_file.path
+        @stream_files << stream_file
+        fn_concat_feed(stream_file.path)
       end
     end
 
     def add_black_screen
-      filelist.write("file #{File.expand_path("./lib/black_streams/1080x1920.mkv")}\n")
+      stream_file = StreamFile.new(file_name: "black_screen", extension: ".mkv")
+      stream_file.write(File.open("./lib/black_streams/1080x1920.mkv").read, "wb")
+      fn_concat_feed(stream_file.path)
     end
 
     def purge!
-      local_files.each(&:delete)
-      filelist.delete
-    end
-
-    def create_mp4
-      raise Error, "File does not exist" unless File.exist?(filelist.path)
-
-      command = "ffmpeg -f concat -safe 0 -i '#{filelist.path}' -c copy ./lib/tmp/output_#{@conference_id}.mp4"
-      process = IO.popen(command)
-      Process.waitpid2(process.pid)
+      sleep 5
+      stream_files.each(&:delete)
+      File.delete(@concat_pls) if File.exist?(@concat_pls)
+      Process.kill("TERM", @ffmpeg_process.pid) if @ffmpeg_process&.pid
     end
 
     private
 
-    attr_reader :playlist_hash, :instructions, :filelist, :local_files
+    attr_reader :merged_instructions, :playlist_hash, :instructions, :stream_files
 
     def add_to_hash(file)
       raise Error, "Invalid HLS file: #{file}" unless file.end_with?(".ts")
@@ -119,9 +112,9 @@ module StreamMerger
     end
 
     def create_merged_file(idx, instructions)
-      local_file = LocalFile.new("output_#{@conference_id}_#{idx}.mkv")
-      merge_streams(instructions, local_file.path)
-      local_file
+      stream_file = StreamFile.new(file_name: "#{idx}_output", extension: ".mkv")
+      merge_streams(instructions, stream_file.path)
+      stream_file
     end
   end
 end
