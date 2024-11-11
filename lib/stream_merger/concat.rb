@@ -16,7 +16,7 @@ module StreamMerger
       cmd = <<-CMD
         ffmpeg -y -safe 0 -i #{@concat_pls} \
         -preset ultrafast -pix_fmt yuv420p -r 30 -g 150 -c:v libx264 -c:a aac -f hls \
-        -hls_time 5 -hls_list_size 0 \
+        -hls_time 1 -hls_list_size 0 \
         -method PUT \
         '#{append_to_url_path(StreamMerger.hls_upload_url, "#{@conference_id}.m3u8")}'
       CMD
