@@ -49,6 +49,7 @@ module StreamMerger
     attr_reader :conference, :file_loader, :files, :stream_ids
 
     def run # rubocop:disable Metrics/MethodLength
+      sleep 15
       return unless @stream_ids.any?
 
       loop do
@@ -74,10 +75,10 @@ module StreamMerger
     end
 
     def load_files
-      sleep 4.5
       @mutex.synchronize do
         @files = file_loader.files(@stream_ids) if @stream_ids.any?
       end
+      sleep 4.5
     end
   end
 end
