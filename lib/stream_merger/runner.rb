@@ -7,6 +7,7 @@ module StreamMerger
     attr_reader :status, :exception
 
     BREAKER_LIMIT = 150
+    BLACK_SCREEN_LIMIT = 20
 
     def initialize(conference_id: SecureRandom.hex, stream_ids: [])
       @stream_ids = stream_ids
@@ -60,7 +61,7 @@ module StreamMerger
         end
         break if @loop_breaker >= BREAKER_LIMIT || hard_stop
 
-        conference.add_black_screen
+        conference.add_black_screen if @loop_breaker <= BLACK_SCREEN_LIMIT
         @loop_breaker += 1
         sleep 0.5
       end
@@ -78,7 +79,6 @@ module StreamMerger
       @mutex.synchronize do
         @files = file_loader.files(@stream_ids) if @stream_ids.any?
       end
-      sleep 4.5
     end
   end
 end
