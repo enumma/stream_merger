@@ -57,7 +57,6 @@ module StreamMerger
     end
 
     def purge!
-      sleep 5
       stream_files.each(&:delete)
       File.delete(@concat_pls) if File.exist?(@concat_pls)
       Process.kill("TERM", @ffmpeg_process.pid) if @ffmpeg_process&.pid

@@ -21,6 +21,7 @@ runner.start
 runner.add_stream("Rpk4IP1Ss1A5")
 # Wait process to finish
 loop do
+  runner.hard_stop = true # Signal to not include black screen
   break unless runner.running?
 end
 # Ensure thread completes

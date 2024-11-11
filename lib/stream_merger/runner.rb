@@ -3,7 +3,10 @@
 module StreamMerger
   # Runner
   class Runner
+    attr_accessor :hard_stop
     attr_reader :status, :exception
+
+    BREAKER_LIMIT = 150
 
     def initialize(stream_ids = [])
       @stream_ids = stream_ids
@@ -13,6 +16,7 @@ module StreamMerger
       @running = false
       @loop_breaker = 0
       @exception = nil
+      @hard_stop = false
     end
 
     def start
@@ -47,8 +51,11 @@ module StreamMerger
 
       loop do
         load_files
-        next if execute_instructions
-        break if @loop_breaker >= 10
+        if execute_instructions
+          @loop_breaker = 0
+          next
+        end
+        break if @loop_breaker >= BREAKER_LIMIT || hard_stop
 
         conference.add_black_screen
         @loop_breaker += 1
