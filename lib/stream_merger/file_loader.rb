@@ -3,8 +3,7 @@
 module StreamMerger
   # FileLoader
   class FileLoader
-    def initialize(start_time: nil, bucket: ENV.fetch("S3_STREAMS_BUCKET"))
-      @start_time = start_time
+    def initialize(bucket: ENV.fetch("S3_STREAMS_BUCKET"))
       @s3_resource = Aws::S3::Resource.new(StreamMerger.s3_credentials)
       @streams_bucket = @s3_resource.bucket(bucket)
     end
@@ -24,7 +23,6 @@ module StreamMerger
     def s3_objects(stream_ids)
       stream_ids.map do |stream_id|
         objects = streams_bucket.objects(prefix: "streams/#{stream_id}").select { |s| s.key.match(".ts") }
-        objects = objects.select { |f| f.last_modified >= @start_time } if @start_time
         objects
       end
     end

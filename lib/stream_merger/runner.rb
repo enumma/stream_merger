@@ -8,16 +8,15 @@ module StreamMerger
 
     BREAKER_LIMIT = 150
 
-    def initialize(start_time: nil, conference_id: SecureRandom.hex, stream_ids: [])
+    def initialize(conference_id: SecureRandom.hex, stream_ids: [])
       @stream_ids = stream_ids
-      @file_loader = FileLoader.new(start_time:, bucket: StreamMerger.streams_bucket)
+      @file_loader = FileLoader.new(bucket: StreamMerger.streams_bucket)
       @conference = StreamMerger::Conference.new(conference_id:)
       @mutex = Mutex.new # Mutex to safely modify stream_ids
       @running = false
       @loop_breaker = 0
       @exception = nil
       @hard_stop = false
-      @start_time = start_time
     end
 
     def start
@@ -78,6 +77,7 @@ module StreamMerger
       @mutex.synchronize do
         @files = file_loader.files(@stream_ids) if @stream_ids.any?
       end
+      sleep 4.5
     end
   end
 end

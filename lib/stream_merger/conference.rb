@@ -53,7 +53,8 @@ module StreamMerger
 
     def add_black_screen
       stream_file = StreamFile.new(file_name: "black_screen", extension: ".mkv")
-      stream_file.write(File.open("./lib/black_streams/1080x1920.mkv").read, "wb")
+      file = File.expand_path("./lib/black_streams/1080x1920.mkv")
+      stream_file.write(File.open(file).read, "wb")
       fn_concat_feed(stream_file.path)
     end
 
