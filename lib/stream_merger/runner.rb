@@ -76,9 +76,9 @@ module StreamMerger
       loop do
         break if !running? && !@file_uploader.more_files_to_upload?
 
-        @file_uploader.upload_files
+        @file_uploader.upload_files_in_batches
       end
-      @file_uploader.delete_files
+      # @file_uploader.delete_files
     end
 
     def execute_instructions

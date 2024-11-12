@@ -9,10 +9,20 @@ module StreamMerger
       @s3_resource = Aws::S3::Resource.new(StreamMerger.s3_credentials)
       @streams_bucket = @s3_resource.bucket(bucket)
       @upload_dir = format(DEFAULT_UPLOAD_DIR_TEMPLATE, conference_id: conference_id)
+      @uplodaded_files = []
     end
 
     def upload_files
       files.each { |file| upload_file(file) }
+    end
+
+    def upload_files_in_batches(batch_size: 10)
+      files.each_slice(batch_size) do |file_batch|
+        threads = file_batch.map do |file|
+          Thread.new { upload_file(file) }
+        end
+        threads.each(&:join) # Wait for all threads to finish
+      end
     end
 
     def more_files_to_upload?
@@ -35,7 +45,7 @@ module StreamMerger
     attr_reader :s3_resource, :streams_bucket, :upload_dir
 
     def files
-      Dir.glob(upload_dir)
+      Dir.glob(upload_dir).select { |file| !@uplodaded_files.include?(file) }
     end
 
     def upload_file(file)
@@ -50,6 +60,7 @@ module StreamMerger
       puts "Uploading #{file}..."
       s3_object.upload_file(file)
       puts "Uploaded #{file} successfully."
+      @uplodaded_files << file if file.match?(/\.ts$/)
     rescue Aws::S3::Errors::ServiceError => e
       puts "Failed to upload #{file}: #{e.message}"
     end
