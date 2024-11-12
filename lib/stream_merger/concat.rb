@@ -17,7 +17,7 @@ module StreamMerger
         ffmpeg -y -safe 0 -i #{@concat_pls} \
         -preset ultrafast -pix_fmt yuv420p -r 30 -g 30 -c:v libx264 -c:a aac -f hls \
         -hls_time 1 -hls_list_size 0 -hls_flags append_list \
-        -hls_segment_filename '#{@conference_id}_%03d.ts' "#{@conference_id}.m3u8")}'
+        -hls_segment_filename './tmp/#{@conference_id}_%03d.ts' './tmp/#{@conference_id}.m3u8'
       CMD
 
       @ffmpeg_process ||= IO.popen(cmd, "w")
