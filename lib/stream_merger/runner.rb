@@ -13,6 +13,7 @@ module StreamMerger
     def initialize(conference_id: SecureRandom.hex, stream_ids: [])
       @stream_ids = stream_ids
       @file_loader = FileLoader.new(bucket: StreamMerger.streams_bucket)
+      @file_uploader = FileUploader.new(conference_id:, bucket: StreamMerger.streams_bucket)
       @conference = StreamMerger::Conference.new(conference_id:)
       @mutex = Mutex.new # Mutex to safely modify stream_ids
       @running = false
@@ -26,10 +27,12 @@ module StreamMerger
 
       @running = true
       @thread = Thread.new { run } # Run in a background thread
+      @upload_thread = Thread.new { upload_files } # Run in a background thread
     end
 
     def stop
       @thread&.join # Ensure thread completes
+      @upload_thread&.join # Ensure thread completes
     end
 
     def add_stream(stream_id)
@@ -67,6 +70,15 @@ module StreamMerger
       @exception = e
     ensure
       @running = false
+    end
+
+    def upload_files
+      loop do
+        break if !running? && !@file_uploader.more_files_to_upload?
+
+        @file_uploader.upload_files
+      end
+      @file_uploader.delete_files
     end
 
     def execute_instructions
