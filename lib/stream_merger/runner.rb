@@ -51,8 +51,7 @@ module StreamMerger
     attr_reader :conference, :file_loader, :files, :stream_ids
 
     def run # rubocop:disable Metrics/MethodLength
-      sleep 15
-      return unless @stream_ids.any?
+      wait_for_streams
 
       loop do
         load_files
@@ -86,6 +85,17 @@ module StreamMerger
 
     def no_data_for_too_long?
       @loop_breaker >= BREAKER_LIMIT
+    end
+
+    def wait_for_streams
+      loop do
+        break if @stream_ids.any?
+        raise Error, "No stream found!" if @loop_breaker >= BREAKER_LIMIT
+
+        @loop_breaker += 1
+        sleep 1
+      end
+      @loop_breaker = 0
     end
   end
 end

@@ -15,8 +15,8 @@ module StreamMerger
     def ffmpeg_process
       cmd = <<-CMD
         ffmpeg -y -safe 0 -i #{@concat_pls} \
-        -preset ultrafast -pix_fmt yuv420p -r 30 -g 150 -c:v libx264 -c:a aac -f hls \
-        -hls_time 1 -hls_list_size 0 \
+        -preset ultrafast -pix_fmt yuv420p -r 30 -g 30 -c:v libx264 -c:a aac -f hls \
+        -hls_time 1 -hls_list_size 0 -hls_flags append_list \
         -method PUT \
         '#{append_to_url_path(StreamMerger.hls_upload_url, "#{@conference_id}.m3u8")}'
       CMD
@@ -30,7 +30,7 @@ module StreamMerger
 
     def fn_concat_feed(file)
       ffmpeg_process
-
+      puts "#{@conference_id}.m3u8"
       # Write the required information to the FIFO
       File.open(@concat_pls, "w") do |fifo|
         fifo.puts "ffconcat version 1.0\nfile '#{file}'\nfile '#{@concat_pls}'\noption safe 0"
