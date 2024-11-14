@@ -15,7 +15,6 @@ module StreamMerger
       @stream_files = []
       @concat_pls = StreamFile.new(file_name: "concat", extension: ".txt", type: "fifo").path
       @conference_id = conference_id
-      @last_modified = nil
     end
 
     def playlists
@@ -38,13 +37,15 @@ module StreamMerger
     end
 
     def build_instructions(pop)
-      i = timeline.map do |start_time, end_time|
+      complete_set = timeline.map do |start_time, end_time|
         concurrent(start_time, end_time).map do |playlist|
           build_instruction(playlist, start_time, end_time)
         end.compact
       end.reject(&:empty?)
-      4.times { i.pop } if pop
-      i
+
+      popped_set = complete_set.dup
+      4.times { popped_set.pop } if pop
+      popped_set
     end
 
     def execute_instruction(instruction)
@@ -70,6 +71,10 @@ module StreamMerger
       stop_ffmpeg_process
     end
 
+    def segments
+      playlists.map(&:segments).flatten
+    end
+
     private
 
     attr_reader :merged_instructions, :playlist_hash, :instructions, :stream_files
@@ -89,10 +94,6 @@ module StreamMerger
         .sort
         .each_cons(2)
         .to_a
-    end
-
-    def segments
-      playlists.map(&:segments).flatten
     end
 
     def concurrent(start_time, end_time)

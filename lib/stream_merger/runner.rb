@@ -68,25 +68,22 @@ module StreamMerger
           @condition.wait(@mutex) while @processing
         end
 
-        if conference.execute
-          puts "excecuting"
-          puts "-" * 100
-          next
-        end
+        next if conference.execute
 
         if no_data_for_too_long?
-          puts "No data!!!"
-          conference.execute(pop: false) # execute remaining safe
-          conference.add_black_screen
-          if @hard_stop
-            sleep 10
-            break
-          end
+          next if conference.execute(pop: false) # execute remaining safe
 
-          conference.add_black_screen
+          if @hard_stop
+            puts "waiting!!!"
+            conference.add_black_screen
+            sleep 30
+            break
+          else
+            conference.add_black_screen
+          end
         end
 
-        sleep 0.5
+        sleep 1
       end
     rescue StandardError => e
       @exception = e
@@ -130,6 +127,7 @@ module StreamMerger
     def no_data_for_too_long?
       # No new data
       return (Time.now - @conference.control_time) >= 15 if @conference.control_time
+      return (Time.now - @control_time) >= 20 if @conference.segments.any?
 
       # Waiting for data to arrive
       return false unless (Time.now - @control_time) >= TIME_LIMIT

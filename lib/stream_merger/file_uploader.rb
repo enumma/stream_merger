@@ -31,13 +31,17 @@ module StreamMerger
 
     def delete_files
       files.each do |file|
-        File.delete(file)
-        puts "Deleted #{file}"
-      rescue Errno::ENOENT => e
-        puts "File not found: #{file}, error: #{e.message}"
-      rescue StandardError => e
-        puts "Failed to delete #{file}: #{e.message}"
+        FileUploader.delete_file(file)
       end
+    end
+
+    def self.delete_file(file)
+      File.delete(file)
+      puts "Deleted #{file}"
+    rescue Errno::ENOENT => e
+      puts "File not found: #{file}, error: #{e.message}"
+    rescue StandardError => e
+      puts "Failed to delete #{file}: #{e.message}"
     end
 
     private
@@ -57,10 +61,13 @@ module StreamMerger
         return
       end
 
-      puts "Uploading #{file}..."
+      puts "Uploading #{object_key}..."
       s3_object.upload_file(file)
-      puts "Uploaded #{file} successfully."
-      @uplodaded_files << file if file.match?(/\.ts$/)
+      puts "Uploaded #{object_key} successfully."
+      if file.match?(/\.ts$/)
+        @uplodaded_files << file
+        FileUploader.delete_file(file)
+      end
     rescue Aws::S3::Errors::ServiceError => e
       puts "Failed to upload #{file}: #{e.message}"
     end
