@@ -17,7 +17,6 @@ require_relative "stream_merger/file_uploader"
 require_relative "stream_merger/playlist"
 require_relative "stream_merger/segment"
 require_relative "stream_merger/runner"
-require_relative "stream_merger/muxer"
 require_relative "stream_merger/tester"
 require_relative "stream_merger/version"
 

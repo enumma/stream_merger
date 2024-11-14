@@ -28,7 +28,7 @@ module StreamMerger
     end
 
     def execute(pop: true)
-      instructions = build_instructions(pop)
+      instructions = build_instructions(pop:)
       executed = false
       instructions.each do |instruction|
         executed = execute_instruction(instruction)
@@ -36,7 +36,7 @@ module StreamMerger
       executed
     end
 
-    def build_instructions(pop)
+    def build_instructions(pop:)
       complete_set = timeline.map do |start_time, end_time|
         concurrent(start_time, end_time).map do |playlist|
           build_instruction(playlist, start_time, end_time)

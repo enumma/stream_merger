@@ -49,10 +49,10 @@ module StreamMerger
     attr_reader :s3_resource, :streams_bucket, :upload_dir
 
     def files
-      Dir.glob(upload_dir).select { |file| !@uplodaded_files.include?(file) }
+      Dir.glob(upload_dir).reject { |file| @uplodaded_files.include?(file) }
     end
 
-    def upload_file(file)
+    def upload_file(file) # rubocop:disable Metrics/MethodLength
       object_key = "streams/#{File.basename(file)}"
       s3_object = streams_bucket.object(object_key)
 

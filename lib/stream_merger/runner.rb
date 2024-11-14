@@ -2,7 +2,7 @@
 
 module StreamMerger
   # Runner
-  class Runner
+  class Runner # rubocop:disable Metrics/ClassLength
     attr_accessor :hard_stop
     attr_reader :status, :exception
 
@@ -56,7 +56,7 @@ module StreamMerger
 
     attr_reader :conference, :file_loader, :files, :stream_ids
 
-    def run # rubocop:disable Metrics/MethodLength
+    def run # rubocop:disable Metrics/MethodLength, Metrics/AbcSize, Metrics/CyclomaticComplexity, Metrics/PerceivedComplexity
       wait_for_streams
 
       loop do
@@ -100,7 +100,7 @@ module StreamMerger
       @file_uploader.delete_files
     end
 
-    def load_files
+    def load_files # rubocop:disable Metrics/MethodLength
       current_streams = @stream_ids.dup
 
       # Start processing

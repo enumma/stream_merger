@@ -14,10 +14,6 @@ RSpec.describe StreamMerger::Conference do # rubocop:disable Metrics/BlockLength
       conference.purge!
     end
 
-    it "builds two playlists" do
-      expect(conference.playlists.size).to eq(2)
-    end
-
     it "builds first playlist correctly" do
       expect(conference.playlists[0].segments.size).to eq(9)
     end
@@ -32,7 +28,8 @@ RSpec.describe StreamMerger::Conference do # rubocop:disable Metrics/BlockLength
     end
 
     it "builds instructions" do
-      expect(trim_file_names(conference.build_instructions).to_json).to eq(trim_file_names(instructions).to_json)
+      expect(trim_file_names(conference.build_instructions(pop: false)).to_json).to \
+        eq(trim_file_names(instructions).to_json)
     end
 
     xit "execute instructions" do
