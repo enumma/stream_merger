@@ -7,13 +7,15 @@ module StreamMerger
     include Concat
     MANIFEST_REGEX = /.+\d{4}-\d{2}-\d{2}_\d{2}-\d{2}-\d{2}\.\d{3}/
 
+    attr_reader :control_time
+
     def initialize(conference_id: SecureRandom.hex)
       @playlist_hash = {}
       @merged_instructions = []
-      @merged_files = []
       @stream_files = []
       @concat_pls = StreamFile.new(file_name: "concat", extension: ".txt", type: "fifo").path
       @conference_id = conference_id
+      @last_modified = nil
     end
 
     def playlists
@@ -21,34 +23,39 @@ module StreamMerger
     end
 
     def update(files)
-      new_file_added = false
-      files.each do |file|
-        new_file_added = !add_to_hash(file).nil? || new_file_added
+      files.each do |file, last_modified|
+        add_to_hash(file, last_modified)
       end
-      new_file_added
     end
 
-    def build_instructions
-      timeline.map do |start_time, end_time|
+    def execute(pop: true)
+      instructions = build_instructions(pop)
+      executed = false
+      instructions.each do |instruction|
+        executed = execute_instruction(instruction)
+      end
+      executed
+    end
+
+    def build_instructions(pop)
+      i = timeline.map do |start_time, end_time|
         concurrent(start_time, end_time).map do |playlist|
           build_instruction(playlist, start_time, end_time)
         end.compact
       end.reject(&:empty?)
+      4.times { i.pop } if pop
+      i
     end
 
-    def execute_instructions
-      instruction_set = build_instructions
-      instruction_set.each_with_index do |instructions, idx|
-        next if @merged_instructions.include?(instructions)
+    def execute_instruction(instruction)
+      return false if @merged_instructions.include?(instruction)
 
-        stream_file = create_merged_file(idx, instructions)
-        next if @merged_files.include?(stream_file.path)
-
-        @merged_instructions << instructions
-        @merged_files << stream_file.path
-        @stream_files << stream_file
-        fn_concat_feed(stream_file.path)
-      end
+      @control_time = Time.now
+      @merged_instructions << instruction
+      stream_file = create_merged_file(instruction)
+      @stream_files << stream_file
+      fn_concat_feed(stream_file.path)
+      true
     end
 
     def add_black_screen
@@ -67,20 +74,21 @@ module StreamMerger
 
     attr_reader :merged_instructions, :playlist_hash, :instructions, :stream_files
 
-    def add_to_hash(file)
+    def add_to_hash(file, last_modified)
       raise Error, "Invalid HLS file: #{file}" unless file.end_with?(".ts")
 
       @playlist_hash[manifest(file)] ||= Playlist.new(file_name: file_name(file))
-      @playlist_hash[manifest(file)] << file
+      @playlist_hash[manifest(file)].add_segment(file, last_modified)
     end
 
     def timeline
-      segments.map { |s| [s.start_time, s.end_time] }.flatten.uniq
-              .flatten
-              .sort
-              .uniq
-              .each_cons(2)
-              .to_a
+      segments
+        .map { |s| [s.start_time, s.end_time] }
+        .flatten
+        .uniq
+        .sort
+        .each_cons(2)
+        .to_a
     end
 
     def segments
@@ -101,18 +109,20 @@ module StreamMerger
 
     def build_instruction(playlist, start_time, end_time)
       segment = playlist.segment(start_time, end_time)
+
       file = segment.mkv.path
       start_seconds = segment.seconds(start_time).round(3)
       end_seconds = segment.seconds(end_time).round(3)
-      return if (end_seconds - start_seconds) < 0.2 # avoid corrupted files
 
-      { file:, start_seconds:, end_seconds:,
+      return if start_seconds.negative? || (end_seconds - start_seconds) < 0.2 # avoid corrupted files
+
+      { file:, start_seconds:, end_seconds:, stream: segment.stream,
         width: playlist.width,
         height: playlist.height }
     end
 
-    def create_merged_file(idx, instructions)
-      stream_file = StreamFile.new(file_name: "#{idx}_output", extension: ".mkv")
+    def create_merged_file(instructions)
+      stream_file = StreamFile.new(file_name: "output", extension: ".mkv")
       merge_streams(instructions, stream_file.path)
       stream_file
     end

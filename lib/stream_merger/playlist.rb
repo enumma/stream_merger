@@ -12,8 +12,8 @@ module StreamMerger
       @segments = []
     end
 
-    def <<(file)
-      segment = build_segment(file)
+    def add_segment(file, last_modified)
+      segment = build_segment(file, last_modified)
       return nil unless segment
 
       @segments << segment
@@ -36,15 +36,15 @@ module StreamMerger
 
     attr_reader :tmp
 
-    def build_segment(file)
+    def build_segment(file, last_modified)
       if segments.empty?
         self.resolution = file
-        return Segment.new(file:)
+        return Segment.new(file:, last_modified:)
       end
 
       return nil if files.include?(file)
 
-      Segment.new(file:, start_time: segments.last.end_time)
+      Segment.new(file:, last_modified:, start_time: segments.last.end_time)
     end
 
     def files

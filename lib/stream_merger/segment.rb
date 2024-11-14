@@ -5,16 +5,18 @@ module StreamMerger
   class Segment
     include Utils
 
-    attr_reader :file, :duration, :start_time, :end_time
+    attr_reader :stream, :file, :duration, :start_time, :end_time, :last_modified
 
-    def initialize(file:, start_time: file_timestamp(file))
+    def initialize(file:, last_modified:, start_time: file_timestamp(file))
       @file = file
-
+      @last_modified = last_modified
       @start_time = start_time
       set_data
     end
 
     def seconds(timestamp)
+      # return 0  if timestamp <= start_time
+
       timestamp - start_time
     end
 
@@ -32,6 +34,7 @@ module StreamMerger
 
     def set_data
       @timestamp = file_timestamp(file)
+      @stream = stream_name(file)
       @duration = ffmpeg_duration(mkv.path)
       # @duration = ffmpeg_duration(file)
       @end_time = start_time + duration.seconds

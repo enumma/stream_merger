@@ -4,15 +4,21 @@ module StreamMerger
   # Utils
   module Utils
     TIMESTAMP_REGEX = /\d{4}-\d{2}-\d{2}_\d{2}-\d{2}-\d{2}\.\d{3}/
-    TIMESTAMP_FORMAT = "%Y-%m-%d_%H-%M-%S.%L"
+    TIMESTAMP_FORMAT = "%Y-%m-%d_%H-%M-%S.%L %Z"
+    STREAM_NAME_REGEX = %r{streams/([^/]+)-\d{4}-\d{2}-\d{2}_\d{2}-\d{2}-\d{2}\.\d{3}}
 
     def file_timestamp(file)
       timestamp_str = file[TIMESTAMP_REGEX]
       return unless timestamp_str
 
-      Time.strptime(timestamp_str, TIMESTAMP_FORMAT)
+      Time.strptime("#{timestamp_str} UTC", TIMESTAMP_FORMAT)
     rescue ArgumentError
       nil
+    end
+
+    def stream_name(file)
+      match = file.match(STREAM_NAME_REGEX)
+      match[1] if match
     end
 
     def ffmpeg_duration(url)

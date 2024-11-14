@@ -6,18 +6,16 @@ module StreamMerger
     attr_accessor :hard_stop
     attr_reader :status, :exception
 
-    BREAKER_LIMIT = 150
-    BLACK_SCREEN_LIMIT = 20
-    HARD_STOP_LIMIT = 20
+    TIME_LIMIT = 300
 
     def initialize(conference_id: SecureRandom.hex, stream_ids: [])
+      @mutex = Mutex.new                 # Mutex to safely modify stream_ids
+      @condition = ConditionVariable.new # Condition variable to signal processing completion
+      @processing = false
       @stream_ids = stream_ids
       @file_loader = FileLoader.new(bucket: StreamMerger.streams_bucket)
       @file_uploader = FileUploader.new(conference_id:, bucket: StreamMerger.streams_bucket)
       @conference = StreamMerger::Conference.new(conference_id:)
-      @mutex = Mutex.new # Mutex to safely modify stream_ids
-      @running = false
-      @loop_breaker = 0
       @exception = nil
       @hard_stop = false
     end
@@ -31,12 +29,17 @@ module StreamMerger
     end
 
     def stop
-      @thread&.join # Ensure thread completes
+      @mutex.synchronize do
+        @running = false
+        @condition.signal # Wake up any waiting thread
+      end
+      @thread&.join # Ensure the background thread completes
       @upload_thread&.join # Ensure thread completes
     end
 
     def add_stream(stream_id)
       @mutex.synchronize do
+        @control_time ||= Time.now
         @stream_ids << stream_id unless @stream_ids.include?(stream_id)
       end
     end
@@ -57,13 +60,32 @@ module StreamMerger
       wait_for_streams
 
       loop do
-        load_files
-        next if execute_instructions
+        # Skip execution if new stream available before finishing loading files
+        next if load_files
 
-        @loop_breaker += 1
-        break if hard_stop? || no_data_for_too_long?
+        @mutex.synchronize do
+          # Wait if a stream is being processed
+          @condition.wait(@mutex) while @processing
+        end
 
-        conference.add_black_screen if @loop_breaker >= BLACK_SCREEN_LIMIT
+        if conference.execute
+          puts "excecuting"
+          puts "-" * 100
+          next
+        end
+
+        if no_data_for_too_long?
+          puts "No data!!!"
+          conference.execute(pop: false) # execute remaining safe
+          conference.add_black_screen
+          if @hard_stop
+            sleep 10
+            break
+          end
+
+          conference.add_black_screen
+        end
+
         sleep 0.5
       end
     rescue StandardError => e
@@ -78,36 +100,54 @@ module StreamMerger
 
         @file_uploader.upload_files_in_batches
       end
-      # @file_uploader.delete_files
-    end
-
-    def execute_instructions
-      conference.update(@files) && conference.execute_instructions && (@loop_breaker = 0)
+      @file_uploader.delete_files
     end
 
     def load_files
+      current_streams = @stream_ids.dup
+
+      # Start processing
       @mutex.synchronize do
-        @files = file_loader.files(@stream_ids) if @stream_ids.any?
+        @processing = true
       end
+
+      files = file_loader.files(@stream_ids) if @stream_ids.any?
+      conference.update(files) if files # Slow process
+
+      # Stop processing
+      @mutex.synchronize do
+        @processing = false
+        @condition.signal # Signal `run` to continue
+      end
+
+      current_streams != @stream_ids
     end
 
     def hard_stop?
-      hard_stop && @loop_breaker >= HARD_STOP_LIMIT
+      hard_stop
     end
 
     def no_data_for_too_long?
-      @loop_breaker >= BREAKER_LIMIT
+      # No new data
+      return (Time.now - @conference.control_time) >= 15 if @conference.control_time
+
+      # Waiting for data to arrive
+      return false unless (Time.now - @control_time) >= TIME_LIMIT
+
+      # Data never arrived
+      raise Error, "Data never arrived"
     end
 
     def wait_for_streams
+      i = 0
+      puts "Wait maximum #{TIME_LIMIT} seconds for streams"
       loop do
         break if @stream_ids.any?
-        raise Error, "No stream found!" if @loop_breaker >= BREAKER_LIMIT
+        raise Error, "No stream found!" if i >= TIME_LIMIT
 
-        @loop_breaker += 1
+        i += 1
         sleep 1
       end
-      @loop_breaker = 0
     end
   end
 end

@@ -36,7 +36,7 @@ RSpec.describe StreamMerger::Conference do # rubocop:disable Metrics/BlockLength
     end
 
     xit "execute instructions" do
-      conference.execute_instructions
+      conference.execute
     end
   end
 

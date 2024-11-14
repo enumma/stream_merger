@@ -17,7 +17,7 @@ module StreamMerger
       i = 0
       loop do
         add_files
-        next if execute_instructions
+        next if execute
         break if i >= 10
 
         conference.add_black_screen
@@ -27,8 +27,8 @@ module StreamMerger
 
     private
 
-    def execute_instructions
-      conference.update(expand_files(@files)) && conference.execute_instructions
+    def execute
+      conference.update(expand_files(@files)) && conference.execute
     end
 
     def add_files

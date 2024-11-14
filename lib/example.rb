@@ -14,17 +14,20 @@ StreamMerger.configure do |config|
   config.hls_upload_url = "http://antmedia.test.enumma.com/WebRTCAppEE/hls-upload/"
 end
 
-# Initialize runner
-runner = StreamMerger::Runner.new(stream_ids: ["wVtG6250NtC5"])
-# Start the runner in the background
+runner = StreamMerger::Runner.new
 runner.start
-# Add streams dynamically while `run` is executing
-runner.add_stream("Rpk4IP1Ss1A5")
-# Wait process to finish
 loop do
-  runner.hard_stop = true # Signal to not include black screen
+  stream_ids = JSON.parse(`curl https://antmedia.test.enumma.com/WebRTCAppEE/rest/v2/broadcasts/list/0/10`).map { |s| s["streamId"] }.reject { |s| s == "room1" }
+  stream_ids.each do |stream_id|
+    puts "adding stream #{stream_id}"
+    runner.add_stream(stream_id)
+  end
   break unless runner.running?
+
+  runner.hard_stop = true if stream_ids.any?
+  sleep 1
 end
+
 # Ensure thread completes
 runner.stop
 
