@@ -9,12 +9,13 @@ module StreamMerger
 
     attr_reader :control_time
 
-    def initialize(conference_id: SecureRandom.hex)
+    def initialize(main_m3u8:, conference_id: SecureRandom.hex)
       @playlist_hash = {}
       @merged_instructions = []
       @stream_files = []
       @concat_pls = StreamFile.new(file_name: "concat", extension: ".txt", type: "fifo").path
       @conference_id = conference_id
+      @main_m3u8 = main_m3u8
     end
 
     def playlists

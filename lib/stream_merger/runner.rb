@@ -14,8 +14,9 @@ module StreamMerger
       @processing = false
       @stream_ids = stream_ids
       @file_loader = FileLoader.new(bucket: StreamMerger.streams_bucket)
-      @file_uploader = FileUploader.new(conference_id:, bucket: StreamMerger.streams_bucket)
-      @conference = StreamMerger::Conference.new(conference_id:)
+      main_m3u8 = StreamMerger::StreamFile.new(file_name: conference_id, extension: ".m3u8")
+      @file_uploader = FileUploader.new(main_m3u8:, conference_id:, bucket: StreamMerger.streams_bucket)
+      @conference = StreamMerger::Conference.new(conference_id:, main_m3u8:)
       @exception = nil
       @hard_stop = false
     end
