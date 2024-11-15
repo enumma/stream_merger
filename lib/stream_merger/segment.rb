@@ -35,7 +35,7 @@ module StreamMerger
     def set_data
       @timestamp = file_timestamp(file)
       @stream = stream_name(file)
-      @duration = ffmpeg_duration(mkv.path)
+      @duration = ffmpeg_exact_duration(mkv.path)
       # @duration = ffmpeg_duration(file)
       @end_time = start_time + duration.seconds
     end

@@ -28,8 +28,7 @@ module StreamMerger
     end
 
     def ffmpeg_exact_duration(url)
-      `ffprobe -v error -select_streams v -of \
-      default=noprint_wrappers=1:nokey=1 -show_entries stream=duration #{url}`.to_f
+      `ffprobe -v error -select_streams v:0 -show_entries format=duration -of csv=p=0 #{url}`.to_f
     end
 
     def ffmpeg_resolution(url)

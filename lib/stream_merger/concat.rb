@@ -34,6 +34,7 @@ module StreamMerger
       File.open(@concat_pls, "w") do |fifo|
         fifo.puts "ffconcat version 1.0\nfile '#{file}'\nfile '#{@concat_pls}'\noption safe 0"
       end
+      sleep 0.5 # Without this sleep, ffmpeg will not be able to concatenate properly
     end
 
     def append_to_url_path(url, path_to_add)

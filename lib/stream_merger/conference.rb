@@ -113,8 +113,8 @@ module StreamMerger
       segment = playlist.segment(start_time, end_time)
 
       file = segment.mkv.path
-      start_seconds = segment.seconds(start_time).round(3)
-      end_seconds = segment.seconds(end_time).round(3)
+      start_seconds = segment.seconds(start_time)
+      end_seconds = segment.seconds(end_time)
 
       return if start_seconds.negative? || (end_seconds - start_seconds) < 0.2 # avoid corrupted files
 
