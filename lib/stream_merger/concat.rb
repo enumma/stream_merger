@@ -3,15 +3,6 @@
 module StreamMerger
   # Concat
   module Concat
-    # Notes
-    # @ffmpeg_process ||= IO.popen("ffmpeg -y -safe 0 -i #{@concat_pls} -preset ultrafast -pix_fmt yuv420p -r 30 -c:v
-    # libx264 -c:a aac all.mkv",
-    #                              "w")
-    # cmd = <<-CMD
-    #   ffmpeg -y -safe 0 -i #{@concat_pls} \
-    #   -preset ultrafast -pix_fmt yuv420p -r 30 -g 150 -c:v libx264 -c:a aac -f hls \
-    #   -hls_time 5 -hls_list_size 0 -hls_segment_filename './tmp/segment_%03d.ts' './tmp/all.m3u8'
-    # CMD
     def ffmpeg_process
       cmd = <<-CMD
         ffmpeg -y -safe 0 -i #{@concat_pls} \
@@ -29,7 +20,6 @@ module StreamMerger
 
     def fn_concat_feed(file)
       ffmpeg_process
-      puts "#{@conference_id}.m3u8"
       # Write the required information to the FIFO
       File.open(@concat_pls, "w") do |fifo|
         fifo.puts "ffconcat version 1.0\nfile '#{file}'\nfile '#{@concat_pls}'\noption safe 0"

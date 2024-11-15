@@ -32,19 +32,24 @@ module StreamMerger
       segments.select { |s| s.start_time < end_time && s.end_time > start_time }.last
     end
 
+    def reorder
+      @segments = @segments.sort_by(&:last_modified)
+      timestamp = @segments.first.initial_timestamp
+      @segments.each do |segment|
+        timestamp = segment.set_timestamps(timestamp:)
+      end
+    end
+
     private
 
     attr_reader :tmp
 
     def build_segment(file, last_modified)
-      if segments.empty?
-        self.resolution = file
-        return Segment.new(file:, last_modified:)
-      end
+      self.resolution = file if segments.empty?
 
       return nil if files.include?(file)
 
-      Segment.new(file:, last_modified:, start_time: segments.last.end_time)
+      Segment.new(file:, last_modified:)
     end
 
     def files

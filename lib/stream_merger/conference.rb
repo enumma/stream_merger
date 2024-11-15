@@ -23,9 +23,15 @@ module StreamMerger
     end
 
     def update(files)
-      files.each do |file, last_modified|
-        add_to_hash(file, last_modified)
+      threads = files.map do |file, last_modified|
+        Thread.new do
+          add_to_hash(file, last_modified)
+        end
       end
+
+      # Wait for all threads to finish
+      threads.each(&:join)
+      playlists.each(&:reorder)
     end
 
     def execute(pop: true)
@@ -118,7 +124,7 @@ module StreamMerger
 
       return if start_seconds.negative? || (end_seconds - start_seconds) < 0.2 # avoid corrupted files
 
-      { file:, start_seconds:, end_seconds:, stream: segment.stream,
+      { file:, start_seconds:, end_seconds:,
         width: playlist.width,
         height: playlist.height }
     end

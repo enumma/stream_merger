@@ -11,21 +11,16 @@ StreamMerger.configure do |config|
     secret_access_key: ENV.fetch("AWS_SECRET_ACCESS_KEY")
   }
   config.streams_bucket = ENV.fetch("S3_STREAMS_BUCKET")
-  config.hls_upload_url = "http://antmedia.test.enumma.com/WebRTCAppEE/hls-upload/"
 end
 
-runner = StreamMerger::Runner.new
+# runner = StreamMerger::Runner.new(stream_ids: %w[ewbmlXE8Py7L ZqueuFbL1FQj])
+runner = StreamMerger::Runner.new(stream_ids: %w[E3ivaecEHlJr ZOm21G0irMQh diTBkWXcZ5xJ veAAQNHlk7EV])
 runner.start
 loop do
-  stream_ids = JSON.parse(`curl -s https://antmedia.test.enumma.com/WebRTCAppEE/rest/v2/broadcasts/list/0/10`).map { |s| s["streamId"] }.reject { |s| s == "room1" }
-  stream_ids.each do |stream_id|
-    puts "adding stream #{stream_id}"
-    runner.add_stream(stream_id)
-  end
   break unless runner.running?
 
-  runner.hard_stop = true if stream_ids.any?
-  sleep 1 # do not saturate
+  runner.hard_stop = true
+  sleep 1
 end
 
 # Ensure thread completes

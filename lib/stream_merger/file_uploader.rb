@@ -8,12 +8,13 @@ module StreamMerger
     def initialize(main_m3u8:, conference_id:, bucket: ENV.fetch("S3_STREAMS_BUCKET"))
       @s3_resource = Aws::S3::Resource.new(StreamMerger.s3_credentials)
       @streams_bucket = @s3_resource.bucket(bucket)
+      @main_m3u8 = main_m3u8
       dirname = File.dirname(main_m3u8.path)
       @upload_dir = format(UPLOAD_DIR_TEMPLATE, dirname:, conference_id: conference_id)
       @uploaded_files = []
     end
 
-    def upload_files_in_batches(batch_size: 10)
+    def upload_files_in_batches(batch_size: 100)
       files.each_slice(batch_size) do |file_batch|
         threads = file_batch.map do |file|
           Thread.new { upload_file(file) }
@@ -41,7 +42,7 @@ module StreamMerger
     end
 
     def upload_file(file)
-      upload_file_to_bucket(bucket: streams_bucket, file:)
+      upload_manifest if upload_ts_segment(file:)
 
       return if !file.match?(/\.ts$/) || @uploaded_files.include?(file)
 
@@ -49,14 +50,26 @@ module StreamMerger
       delete_file(file)
     end
 
-    def upload_file_to_bucket(bucket:, file:)
-      object_key = "streams/#{File.basename(file)}"
-      s3_object = bucket.object(object_key)
+    def upload_manifest
+      object_key = "streams/#{File.basename(@main_m3u8.path)}"
+      s3_object = streams_bucket.object(object_key)
+      s3_object.upload_file(@main_m3u8.path)
+      puts "Uploaded #{object_key} successfully."
+    rescue Aws::S3::Errors::ServiceError => e
+      puts "Failed to upload #{file}: #{e.message}"
+    end
 
-      return if s3_object.exists? && file.match?(/\.ts$/)
+    def upload_ts_segment(file:)
+      return unless file.match?(/\.ts$/)
+
+      object_key = "streams/#{File.basename(file)}"
+      s3_object = streams_bucket.object(object_key)
+
+      return if s3_object.exists?
 
       s3_object.upload_file(file)
       puts "Uploaded #{object_key} successfully."
+      true
     rescue Aws::S3::Errors::ServiceError => e
       puts "Failed to upload #{file}: #{e.message}"
     end
