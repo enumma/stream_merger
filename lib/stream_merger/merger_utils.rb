@@ -43,20 +43,6 @@ module StreamMerger
       run_ffmpeg(cmd)
     end
 
-    # def base_ffmpeg_command(input_files, filter_complex, output = "output")
-    #   <<~CMD
-    #     ffmpeg -hide_banner -loglevel error #{input_files} \
-    #       -err_detect aggressive \
-    #       -filter_complex "#{filter_complex}" \
-    #       -map "[video]" -map "[audio]" -flags +global_header -c:v libx264 \
-    #       -tune zerolatency -preset veryfast -max_delay 500000 -b:v 8000k -bufsize 16000k -r 30 -g 60 \
-    #       -c:a aac -b:a 128k -ar 44100 \
-    #       -f hls -hls_time 5 \
-    #       -hls_playlist_type event \
-    #       -hls_flags delete_segments+append_list #{output}.m3u8
-    #   CMD
-    # end
-
     def base_ffmpeg_command(input_files, filter_complex, output = "output.mkv")
       <<~CMD
         ffmpeg -hide_banner -loglevel error #{input_files} \

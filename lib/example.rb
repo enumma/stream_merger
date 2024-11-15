@@ -25,7 +25,7 @@ loop do
   break unless runner.running?
 
   runner.hard_stop = true if stream_ids.any?
-  sleep 1
+  sleep 1 # do not saturate
 end
 
 # Ensure thread completes

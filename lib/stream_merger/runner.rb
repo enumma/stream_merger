@@ -77,14 +77,14 @@ module StreamMerger
           if @hard_stop
             puts "waiting!!!"
             conference.add_black_screen
-            sleep 30
+            sleep 2 # Wait to finish concatenating
             break
           else
             conference.add_black_screen
           end
         end
 
-        sleep 1
+        sleep 0.5 # Do not saturate FileLoader
       end
     rescue StandardError => e
       @exception = e
