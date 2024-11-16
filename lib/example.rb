@@ -11,7 +11,6 @@ StreamMerger.configure do |config|
     secret_access_key: ENV.fetch("AWS_SECRET_ACCESS_KEY")
   }
   config.streams_bucket = ENV.fetch("S3_STREAMS_BUCKET")
-  config.hls_upload_url = "http://antmedia.test.enumma.com/WebRTCAppEE/hls-upload/"
 end
 
 runner = StreamMerger::Runner.new

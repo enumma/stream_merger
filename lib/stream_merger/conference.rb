@@ -19,14 +19,12 @@ module StreamMerger
     end
 
     def playlists
-      @playlist_hash.values.sort_by(&:start_time)
+      @playlist_hash.values
     end
 
     def update(files)
       threads = files.map do |file, last_modified|
-        Thread.new do
-          add_to_hash(file, last_modified)
-        end
+        Thread.new { add_to_hash(file, last_modified) }
       end
 
       # Wait for all threads to finish
@@ -36,11 +34,13 @@ module StreamMerger
 
     def execute(pop: true)
       instructions = build_instructions(pop:)
-      executed = false
+      files = []
       instructions.each do |instruction|
-        executed = execute_instruction(instruction)
+        files << execute_instruction(instruction)
       end
-      executed
+      files = files.compact
+      fn_concat_feed(files) if files.any?
+      files.any?
     end
 
     def build_instructions(pop:)
@@ -51,25 +51,24 @@ module StreamMerger
       end.reject(&:empty?)
 
       popped_set = complete_set.dup
-      4.times { popped_set.pop } if pop
+      3.times { popped_set.pop } if pop
       popped_set
     end
 
     def execute_instruction(instruction)
-      return false if @merged_instructions.include?(instruction)
+      return if @merged_instructions.include?(instruction)
 
       @control_time = Time.now
       @merged_instructions << instruction
       stream_file = create_merged_file(instruction)
       @stream_files << stream_file
-      fn_concat_feed(stream_file.path)
-      true
+      stream_file
     end
 
-    def add_black_screen
+    def add_black_screen(finish: false)
       stream_file = StreamFile.new(file_name: "black_screen", extension: ".mkv")
       stream_file.write(File.open("./lib/black_streams/1080x1920.mkv").read, "wb")
-      fn_concat_feed(stream_file.path)
+      fn_concat_feed([stream_file], finish:)
     end
 
     def purge!
@@ -96,15 +95,11 @@ module StreamMerger
     def timeline
       segments
         .map { |s| [s.start_time, s.end_time] }
-        .flatten
-        .uniq
-        .sort
-        .each_cons(2)
-        .to_a
+        .flatten.uniq.sort.each_cons(2).to_a
     end
 
     def concurrent(start_time, end_time)
-      playlists.select { |p| p.start_time < end_time && p.end_time > start_time }
+      playlists.sort_by(&:start_time).select { |p| p.start_time < end_time && p.end_time > start_time }
     end
 
     def file_name(file)
@@ -119,8 +114,8 @@ module StreamMerger
       segment = playlist.segment(start_time, end_time)
 
       file = segment.mkv.path
-      start_seconds = segment.seconds(start_time)
-      end_seconds = segment.seconds(end_time)
+      start_seconds = segment.seconds(start_time).round(4)
+      end_seconds = segment.seconds(end_time).round(4)
 
       return if start_seconds.negative? || (end_seconds - start_seconds) < 0.2 # avoid corrupted files
 

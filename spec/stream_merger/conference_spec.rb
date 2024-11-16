@@ -1,9 +1,10 @@
 # frozen_string_literal: true
 
 RSpec.describe StreamMerger::Conference do # rubocop:disable Metrics/BlockLength
-  let(:files) { fixture_files.select { |file| file.end_with?(".ts") || file.end_with?(".m3u8") } }
+  let(:files) { JSON.parse(File.open(file_path("files.json")).read) }
   let(:instructions) { JSON.parse(File.open(file_path("instructions.json")).read) }
-  let(:conference) { StreamMerger::Conference.new }
+  let(:main_m3u8) {  StreamMerger::StreamFile.new(file_name: "out", extension: ".m3u8") }
+  let(:conference) { StreamMerger::Conference.new(main_m3u8:) }
 
   context "when building a playlist" do
     before do
@@ -14,12 +15,8 @@ RSpec.describe StreamMerger::Conference do # rubocop:disable Metrics/BlockLength
       conference.purge!
     end
 
-    it "builds first playlist correctly" do
-      expect(conference.playlists[0].segments.size).to eq(9)
-    end
-
-    it "builds second playlist correctly" do
-      expect(conference.playlists[1].segments.size).to eq(7)
+    it "builds playlists correctly" do
+      expect(conference.playlists.map { |p| p.segments.size }).to eq([9, 7])
     end
 
     it "builds a timeline" do

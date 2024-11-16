@@ -6,6 +6,10 @@ RSpec.describe StreamMerger::Segment do
                               last_modified: Time.now)
   end
 
+  before do
+    segment.set_timestamps(timestamp: segment.file_timestamp(segment.file))
+  end
+
   it "calculates duration" do
     expect(segment.duration).to eq 6.33
   end

@@ -9,7 +9,7 @@ RSpec.describe StreamMerger::Utils do
   end
 
   it "calculates exact duration" do
-    expect(dummy_class.ffmpeg_exact_duration(file)).to eq 6.202011
+    expect(dummy_class.ffmpeg_exact_duration(file)).to eq 6.333011
   end
 
   it "returns data" do

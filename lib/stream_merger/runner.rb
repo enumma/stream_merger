@@ -76,7 +76,7 @@ module StreamMerger
 
           if @hard_stop
             puts "waiting!!!"
-            conference.add_black_screen
+            conference.add_black_screen(finish: true)
             sleep 2 # Wait to finish concatenating
             break
           else

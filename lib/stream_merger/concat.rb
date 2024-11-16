@@ -18,21 +18,29 @@ module StreamMerger
       Process.kill("TERM", @ffmpeg_process.pid) if @ffmpeg_process&.pid
     end
 
-    def fn_concat_feed(file)
+    def fn_concat_feed(files, finish: false)
+      return if files.empty?
+
       ffmpeg_process
-      # Write the required information to the FIFO
-      File.open(@concat_pls, "w") do |fifo|
-        fifo.puts "ffconcat version 1.0\nfile '#{file}'\nfile '#{@concat_pls}'\noption safe 0"
-      end
-      sleep 2 # Without this sleep, ffmpeg will not be able to concatenate properly
+      write_concat_file(files, finish:)
+      # wait_for_ffmpeg
     end
 
-    def append_to_url_path(url, path_to_add)
-      uri = URI.parse(url)
-      uri.path = File.join(uri.path, path_to_add) # Append to the existing path
-      uri.to_s
-    rescue URI::InvalidURIError
-      "Invalid URL"
+    def write_concat_file(files, finish:)
+      concat_content = build_concat_content(files, finish:)
+      puts concat_content
+      File.write(@concat_pls, concat_content)
+    end
+
+    def build_concat_content(files, finish:)
+      concat_header = "ffconcat version 1.0\n"
+      file_entries = files.map { |file| "file '#{file.path}'\n" }.join
+      self_reference = (finish ? "" : "file '#{@concat_pls}'\n")
+      "#{concat_header}#{file_entries}#{self_reference}option safe 0"
+    end
+
+    def wait_for_ffmpeg
+      sleep 2 # Necessary delay for ffmpeg to process the concatenation
     end
   end
 end
