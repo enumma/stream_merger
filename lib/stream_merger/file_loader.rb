@@ -3,9 +3,8 @@
 module StreamMerger
   # FileLoader
   class FileLoader
-    def initialize(bucket: ENV.fetch("S3_STREAMS_BUCKET"))
-      @s3_resource = Aws::S3::Resource.new(StreamMerger.s3_credentials)
-      @streams_bucket = @s3_resource.bucket(bucket)
+    include StreamMerger::S3Utils
+    def initialize
       @loaded_files = {}
     end
 
@@ -19,8 +18,6 @@ module StreamMerger
     end
 
     private
-
-    attr_reader :s3_resource, :streams_bucket
 
     def s3_objects(stream_ids)
       stream_ids.flat_map do |stream_id|

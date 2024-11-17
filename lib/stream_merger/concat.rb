@@ -28,7 +28,6 @@ module StreamMerger
 
     def write_concat_file(files, finish:)
       concat_content = build_concat_content(files, finish:)
-      puts concat_content
       File.write(@concat_pls, concat_content)
     end
 
