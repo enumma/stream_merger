@@ -4,12 +4,12 @@ module StreamMerger
   # FileUploader
   class FileUploader
     include S3Utils
-    UPLOAD_DIR_TEMPLATE = "%<dirname>s/%<conference_id>s*.{ts,m3u8}"
+    UPLOAD_DIR_TEMPLATE = "%<dirname>s/%<file_name>s*.{ts,m3u8}"
 
-    def initialize(main_m3u8:, conference_id:)
+    def initialize(main_m3u8:)
       @main_m3u8 = main_m3u8
       dirname = File.dirname(main_m3u8.path)
-      @upload_dir = format(UPLOAD_DIR_TEMPLATE, dirname:, conference_id: conference_id)
+      @upload_dir = format(UPLOAD_DIR_TEMPLATE, dirname:, file_name: main_m3u8.file_name)
       @uploaded_files = []
     end
 
@@ -41,12 +41,23 @@ module StreamMerger
     end
 
     def upload_file(file)
-      s3_upload(@main_m3u8, force: true) if s3_upload(file, force: false)
+      upload_to_s3(@main_m3u8, force: true) if upload_to_s3(file, force: false)
 
       return if !file.match?(/\.ts$/) || @uploaded_files.include?(file)
 
       @uploaded_files << file
       delete_file(file)
+    end
+
+    def upload_to_s3(file, force:)
+      if file.respond_to?(:file_name)
+        path = file.path
+        base_name = file.file_name
+      else
+        path = file
+        base_name = File.basename(path)
+      end
+      s3_upload(base_name:, path:, force:)
     end
 
     def delete_file(file)

@@ -13,8 +13,9 @@ StreamMerger.configure do |config|
   config.streams_bucket = ENV.fetch("S3_STREAMS_BUCKET")
 end
 
-# runner = StreamMerger::Runner.new(stream_ids: %w[ewbmlXE8Py7L ZqueuFbL1FQj])
-runner = StreamMerger::Runner.new(stream_ids: %w[E3ivaecEHlJr ZOm21G0irMQh diTBkWXcZ5xJ veAAQNHlk7EV])
+runner = StreamMerger::Runner.new(stream_ids: %w[ewbmlXE8Py7L ZqueuFbL1FQj], handle: "@mauricio",
+                                  stream_key: "7dy2-gsj2-m7rk-8j0a-7vxk")
+# runner = StreamMerger::Runner.new(stream_ids: %w[E3ivaecEHlJr ZOm21G0irMQh diTBkWXcZ5xJ veAAQNHlk7EV])
 runner.start
 loop do
   break unless runner.running?

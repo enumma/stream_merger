@@ -5,9 +5,12 @@ module StreamMerger
   class Segment
     include Utils
 
-    attr_reader :file, :start_time, :end_time, :last_modified, :mkv, :duration
+    W_FONTSIZE = 32 # Watermark fontsize
+
+    attr_reader :segment_id, :file, :start_time, :end_time, :last_modified, :mkv, :duration
 
     def initialize(file:, last_modified:)
+      @segment_id = SecureRandom.hex
       @file = file
       @last_modified = last_modified
       set_mkv

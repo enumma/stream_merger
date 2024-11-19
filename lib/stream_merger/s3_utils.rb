@@ -8,16 +8,10 @@ module StreamMerger
     end
 
     def streams_bucket
-      @streams_bucket ||= s3_resource.bucket(ENV.fetch("S3_STREAMS_BUCKET"))
+      @streams_bucket ||= s3_resource.bucket(StreamMerger.streams_bucket)
     end
 
-    def s3_upload(file, force:)
-      path = if file.respond_to?(:path)
-               file.path
-             else
-               file
-             end
-      base_name = File.basename(path)
+    def s3_upload(path:, base_name:, force:)
       key = "streams/#{base_name}"
       s3_object = streams_bucket.object(key)
       return false if s3_object.exists? && !force

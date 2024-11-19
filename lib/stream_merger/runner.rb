@@ -8,15 +8,13 @@ module StreamMerger
 
     TIME_LIMIT = 300
 
-    def initialize(conference_id: SecureRandom.hex, stream_ids: [])
+    def initialize(conference_id: SecureRandom.hex, stream_ids: [], handle: nil, stream_key: nil)
       @mutex = Mutex.new                 # Mutex to safely modify stream_ids
       @condition = ConditionVariable.new # Condition variable to signal processing completion
       @processing = false
       @stream_ids = stream_ids
       @file_loader = FileLoader.new
-      main_m3u8 = StreamMerger::StreamFile.new(file_name: conference_id, extension: ".m3u8")
-      @file_uploader = FileUploader.new(main_m3u8:, conference_id:)
-      @conference = StreamMerger::Conference.new(conference_id:, main_m3u8:)
+      @conference = Conference.new(conference_id:, handle:, stream_key:)
       @exception = nil
       @hard_stop = false
     end
@@ -75,7 +73,6 @@ module StreamMerger
           next if conference.execute(pop: false) # execute remaining safe
 
           if @hard_stop
-            puts "waiting!!!"
             conference.add_black_screen(finish: true)
             sleep 2 # Wait to finish concatenating
             break
@@ -84,7 +81,7 @@ module StreamMerger
           end
         end
 
-        sleep 0.5 # Do not saturate FileLoader
+        sleep 1 # Do not saturate FileLoader
       end
     rescue StandardError => e
       @exception = e
@@ -94,11 +91,10 @@ module StreamMerger
 
     def upload_files
       loop do
-        break if !running? && !@file_uploader.more_files_to_upload?
+        break if !running? && @conference.upload_files
 
-        @file_uploader.upload_files_in_batches
+        sleep 1
       end
-      @file_uploader.delete_files
     end
 
     def load_files # rubocop:disable Metrics/MethodLength
@@ -127,8 +123,8 @@ module StreamMerger
 
     def no_data_for_too_long?
       # No new data
-      return (Time.now - @conference.control_time) >= 20 if @conference.control_time
-      return (Time.now - @control_time) >= 20 if @conference.segments.any?
+      return (Time.now - @conference.control_time) >= 5 if @conference.control_time
+      return (Time.now - @control_time) >= 50 if @conference.segments.any?
 
       # Waiting for data to arrive
       return false unless (Time.now - @control_time) >= TIME_LIMIT
