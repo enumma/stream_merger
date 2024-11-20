@@ -10,7 +10,7 @@ StreamMerger.configure do |config|
     access_key_id: ENV.fetch("AWS_ACCESS_KEY"),
     secret_access_key: ENV.fetch("AWS_SECRET_ACCESS_KEY")
   }
-  config.streams_bucket = ENV.fetch("S3_STREAMS_BUCKET")
+  config.videos_bucket = ENV.fetch("S3_VIDEOS_BUCKET")
 end
 
 runner = StreamMerger::Runner.new(stream_ids: %w[ewbmlXE8Py7L ZqueuFbL1FQj], handle: "@mauricio",

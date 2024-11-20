@@ -24,7 +24,7 @@ module StreamMerger
     end
 
     def more_files_to_upload?
-      files.any? { |file| !streams_bucket.object("streams/#{File.basename(file)}").exists? }
+      files.any? { |file| !videos_bucket.object("streams/#{File.basename(file)}").exists? }
     end
 
     def delete_files

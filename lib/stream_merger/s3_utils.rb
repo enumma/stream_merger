@@ -7,13 +7,13 @@ module StreamMerger
       @s3_resource ||= Aws::S3::Resource.new(StreamMerger.s3_credentials)
     end
 
-    def streams_bucket
-      @streams_bucket ||= s3_resource.bucket(StreamMerger.streams_bucket)
+    def videos_bucket
+      @videos_bucket ||= s3_resource.bucket(StreamMerger.videos_bucket)
     end
 
     def s3_upload(path:, base_name:, force:)
       key = "streams/#{base_name}"
-      s3_object = streams_bucket.object(key)
+      s3_object = videos_bucket.object(key)
       return false if s3_object.exists? && !force
 
       s3_upload_file(s3_object:, path:)

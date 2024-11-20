@@ -79,7 +79,7 @@ module StreamMerger
     attr_reader :merged_instructions
 
     def add_to_hash(file, last_modified)
-      raise Error, "Invalid HLS file: #{file}" unless file.end_with?(".ts")
+      raise Error, "Invalid HLS file: #{file}" unless file.end_with?(".ts") || file.match("\.ts\?")
 
       @playlist_hash[manifest(file)] ||= Playlist.new(file_name: file_name(file))
       @playlist_hash[manifest(file)].add_segment(file:, last_modified:)
