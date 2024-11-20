@@ -47,7 +47,7 @@ module StreamMerger
       return if !file.match?(/\.ts$/) || @uploaded_files.include?(file)
 
       @uploaded_files << file
-      delete_file(file)
+      # delete_file(file)
     end
 
     def upload_to_s3(file, force:)
