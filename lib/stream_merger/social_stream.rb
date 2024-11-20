@@ -36,7 +36,7 @@ module StreamMerger
     end
 
     def social_processes
-      stream_keys.each do |type, stream_key|
+      @stream_keys.each do |type, stream_key|
         @stream_key = stream_key
         youtube_process if type == "YoutubeStream"
       end
