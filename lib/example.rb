@@ -13,7 +13,7 @@ StreamMerger.configure do |config|
   config.videos_bucket = ENV.fetch("S3_VIDEOS_BUCKET")
 end
 
-runner = StreamMerger::Runner.new(handle: "@mauricio", stream_key: "7dy2-gsj2-m7rk-8j0a-7vxk")
+runner = StreamMerger::Runner.new(handle: "@mauricio", stream_keys: [%w[YoutubeStream 7dy2-gsj2-m7rk-8j0a-7vxk]])
 runner.start
 loop do
   stream_ids = JSON.parse(`curl -s https://antmedia.test.enumma.com/WebRTCAppEE/rest/v2/broadcasts/list/0/10`).map { |s| s["streamId"] }.reject { |s| s == "room1" }

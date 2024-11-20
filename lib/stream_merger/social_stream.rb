@@ -30,31 +30,38 @@ module StreamMerger
       if finish
         add_outro
       else
+        sleep 0.5 if files.any?
         concat_feed(files, finish:)
       end
       social_processes
     end
 
     def social_processes
-      @stream_keys.each do |type, stream_key|
-        @stream_key = stream_key
-        youtube_process if type == "YoutubeStream"
-      end
+      youtube_process
+      # @stream_keys.each do |type, stream_key|
+      #   @stream_key = stream_key
+      #   youtube_process if type == "YoutubeStream"
+      # end
     end
 
     def youtube_process
-      return @youtube_process if @youtube_process
+      # cmd = <<-CMD
+      #   ffmpeg -hide_banner -loglevel error -y \
+      #   -re -i "#{@main_m3u8.path}" -preset ultrafast -r 30 -g 30 -c:a aac \
+      #   -f hls -hls_time 1 -hls_playlist_type event -hls_flags append_list \
+      #   -master_pl_name master.m3u8 \
+      #   -method PUT -http_persistent 1 \
+      #   "https://a.upload.youtube.com/http_upload_hls?cid=#{@stream_key}&copy=0&file=master.m3u8"
+      # CMD
 
       cmd = <<-CMD
         ffmpeg -hide_banner -loglevel error -y \
-        -re -i "#{@main_m3u8.path}" -preset ultrafast -r 30 -g 30 -c:a aac \
-        -f hls -hls_time 1 -hls_playlist_type event -hls_flags delete_segments+append_list \
-        -master_pl_name master.m3u8 \
-        -method PUT -http_persistent 1 \
-        "https://a.upload.youtube.com/http_upload_hls?cid=#{@stream_key}&copy=0&file=master.m3u8"
+        -i "asocial.m3u8" -preset ultrafast -r 30 -g 30 -c:a aac \
+        -f hls -hls_time 1 -hls_playlist_type event -hls_flags append_list \
+        ayoutube.m3u8
       CMD
 
-      @youtube_process = IO.popen(cmd, "w")
+      @youtube_process ||= IO.popen(cmd, "w")
     end
 
     def wait_to_finish
@@ -114,12 +121,19 @@ module StreamMerger
     def ffmpeg_process
       return @ffmpeg_process if @ffmpeg_process
 
+      # cmd = <<-CMD
+      #   ffmpeg -hide_banner -loglevel error -y -safe 0 -i #{@concat_pls} \
+      #   -preset ultrafast -pix_fmt yuv420p -r 30 -g 30 -c:v libx264 -c:a aac -f hls \
+      #   -hls_time 1 -hls_list_size 0 -hls_flags append_list \
+      #   -hls_segment_filename "#{@main_m3u8.dirname}/#{@main_m3u8.file_name}_%09d.ts" \
+      #   '#{@main_m3u8.path}'
+      # CMD
+
       cmd = <<-CMD
         ffmpeg -hide_banner -loglevel error -y -safe 0 -i #{@concat_pls} \
         -preset ultrafast -pix_fmt yuv420p -r 30 -g 30 -c:v libx264 -c:a aac -f hls \
         -hls_time 1 -hls_list_size 0 -hls_flags append_list \
-        -hls_segment_filename "#{@main_m3u8.dirname}/#{@main_m3u8.file_name}_%09d.ts" \
-        '#{@main_m3u8.path}'
+        asocial.m3u8
       CMD
 
       @ffmpeg_process = IO.popen(cmd, "w")
