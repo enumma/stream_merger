@@ -3,46 +3,23 @@
 module StreamMerger
   # Concat
   module Concat
-    # Notes
-    # @ffmpeg_process ||= IO.popen("ffmpeg -y -safe 0 -i #{@concat_pls} -preset ultrafast -pix_fmt yuv420p -r 30 -c:v
-    # libx264 -c:a aac all.mkv",
-    #                              "w")
-    # cmd = <<-CMD
-    #   ffmpeg -y -safe 0 -i #{@concat_pls} \
-    #   -preset ultrafast -pix_fmt yuv420p -r 30 -g 150 -c:v libx264 -c:a aac -f hls \
-    #   -hls_time 5 -hls_list_size 0 -hls_segment_filename './tmp/segment_%03d.ts' './tmp/all.m3u8'
-    # CMD
-    def ffmpeg_process
-      cmd = <<-CMD
-        ffmpeg -y -safe 0 -i #{@concat_pls} \
-        -preset ultrafast -pix_fmt yuv420p -r 30 -g 150 -c:v libx264 -c:a aac -f hls \
-        -hls_time 1 -hls_list_size 0 \
-        -method PUT \
-        '#{append_to_url_path(StreamMerger.hls_upload_url, "#{@conference_id}.m3u8")}'
-      CMD
+    def concat_feed(stream_files, finish: false)
+      return if stream_files.empty?
 
-      @ffmpeg_process ||= IO.popen(cmd, "w")
-    end
-
-    def stop_ffmpeg_process
-      Process.kill("TERM", @ffmpeg_process.pid) if @ffmpeg_process&.pid
-    end
-
-    def fn_concat_feed(file)
       ffmpeg_process
-
-      # Write the required information to the FIFO
-      File.open(@concat_pls, "w") do |fifo|
-        fifo.puts "ffconcat version 1.0\nfile '#{file}'\nfile '#{@concat_pls}'\noption safe 0"
-      end
+      write_concat_file(stream_files, finish:)
     end
 
-    def append_to_url_path(url, path_to_add)
-      uri = URI.parse(url)
-      uri.path = File.join(uri.path, path_to_add) # Append to the existing path
-      uri.to_s
-    rescue URI::InvalidURIError
-      "Invalid URL"
+    def write_concat_file(stream_files, finish:)
+      concat_content = build_concat_content(stream_files, finish:)
+      File.write(@concat_pls, concat_content)
+    end
+
+    def build_concat_content(stream_files, finish:)
+      concat_header = "ffconcat version 1.0\n"
+      file_entries = stream_files.map { |file| "file '#{file.path}'\n" }.join
+      self_reference = (finish ? "" : "file '#{@concat_pls}'\n")
+      "#{concat_header}#{file_entries}#{self_reference}option safe 0\n"
     end
   end
 end

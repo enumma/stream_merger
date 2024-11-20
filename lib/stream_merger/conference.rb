@@ -3,92 +3,86 @@
 module StreamMerger
   # Conference
   class Conference
-    include MergerUtils
-    include Concat
     MANIFEST_REGEX = /.+\d{4}-\d{2}-\d{2}_\d{2}-\d{2}-\d{2}\.\d{3}/
 
-    def initialize(conference_id: SecureRandom.hex)
+    attr_reader :handle, :stream_key, :control_time, :conference_id, :playlist_hash
+
+    def initialize(stream_key: nil, handle: nil, conference_id: SecureRandom.hex)
+      @handle = handle
+      @stream_key = stream_key
       @playlist_hash = {}
       @merged_instructions = []
-      @merged_files = []
-      @stream_files = []
-      @concat_pls = StreamFile.new(file_name: "concat", extension: ".txt", type: "fifo").path
       @conference_id = conference_id
+      @merged_stream = MergedStream.new(self)
+    end
+
+    def social?
+      !handle.nil? && !stream_key.nil?
     end
 
     def playlists
-      @playlist_hash.values.sort_by(&:start_time)
+      @playlist_hash.values
     end
 
     def update(files)
-      new_file_added = false
-      files.each do |file|
-        new_file_added = !add_to_hash(file).nil? || new_file_added
+      threads = files.map do |file, last_modified|
+        Thread.new { add_to_hash(file, last_modified) }
       end
-      new_file_added
+
+      # Wait for all threads to finish
+      threads.each(&:join)
+      playlists.each(&:reorder)
     end
 
-    def build_instructions
-      timeline.map do |start_time, end_time|
+    def execute(pop: true)
+      new_instructions = []
+      build_instructions(pop:).each do |instruction|
+        next if @merged_instructions.include?(instruction)
+
+        @control_time = Time.now
+        @merged_instructions << instruction
+        new_instructions << instruction
+      end
+      @merged_stream.execute(new_instructions)
+    end
+
+    def build_instructions(pop:)
+      complete_set = timeline.map do |start_time, end_time|
         concurrent(start_time, end_time).map do |playlist|
           build_instruction(playlist, start_time, end_time)
         end.compact
       end.reject(&:empty?)
+
+      popped_set = complete_set.dup
+      4.times { popped_set.pop } if pop
+      popped_set
     end
 
-    def execute_instructions
-      instruction_set = build_instructions
-      instruction_set.each_with_index do |instructions, idx|
-        next if @merged_instructions.include?(instructions)
-
-        stream_file = create_merged_file(idx, instructions)
-        next if @merged_files.include?(stream_file.path)
-
-        @merged_instructions << instructions
-        @merged_files << stream_file.path
-        @stream_files << stream_file
-        fn_concat_feed(stream_file.path)
-      end
+    def add_black_screen(finish: false)
+      @merged_stream.add_black_screen(finish:)
     end
 
-    def add_black_screen
-      stream_file = StreamFile.new(file_name: "black_screen", extension: ".mkv")
-      stream_file.write(File.open("./lib/black_streams/1080x1920.mkv").read, "wb")
-      fn_concat_feed(stream_file.path)
+    def upload_files
+      @merged_stream.upload_files
     end
 
     def purge!
-      stream_files.each(&:delete)
-      File.delete(@concat_pls) if File.exist?(@concat_pls)
-      stop_ffmpeg_process
-    end
-
-    private
-
-    attr_reader :merged_instructions, :playlist_hash, :instructions, :stream_files
-
-    def add_to_hash(file)
-      raise Error, "Invalid HLS file: #{file}" unless file.end_with?(".ts")
-
-      @playlist_hash[manifest(file)] ||= Playlist.new(file_name: file_name(file))
-      @playlist_hash[manifest(file)] << file
-    end
-
-    def timeline
-      segments.map { |s| [s.start_time, s.end_time] }.flatten.uniq
-              .flatten
-              .sort
-              .uniq
-              .each_cons(2)
-              .to_a
+      @merged_stream.purge!
     end
 
     def segments
       playlists.map(&:segments).flatten
     end
 
-    def concurrent(start_time, end_time)
-      playlists.select { |p| p.start_time < end_time && p.end_time > start_time }
+    private
+
+    attr_reader :merged_instructions
+
+    def add_to_hash(file, last_modified)
+      raise Error, "Invalid HLS file: #{file}" unless file.end_with?(".ts")
+
+      @playlist_hash[manifest(file)] ||= Playlist.new(file_name: file_name(file))
+      @playlist_hash[manifest(file)].add_segment(file:, last_modified:)
     end
 
     def file_name(file)
@@ -99,22 +93,28 @@ module StreamMerger
       "#{file_name(file)}.m3u8"
     end
 
-    def build_instruction(playlist, start_time, end_time)
-      segment = playlist.segment(start_time, end_time)
-      file = segment.mkv.path
-      start_seconds = segment.seconds(start_time).round(3)
-      end_seconds = segment.seconds(end_time).round(3)
-      return if (end_seconds - start_seconds) < 0.2 # avoid corrupted files
-
-      { file:, start_seconds:, end_seconds:,
-        width: playlist.width,
-        height: playlist.height }
+    def timeline
+      segments
+        .map { |s| [s.start_time, s.end_time] }
+        .flatten.uniq.sort.each_cons(2).to_a
     end
 
-    def create_merged_file(idx, instructions)
-      stream_file = StreamFile.new(file_name: "#{idx}_output", extension: ".mkv")
-      merge_streams(instructions, stream_file.path)
-      stream_file
+    def concurrent(start_time, end_time)
+      playlists.sort_by(&:start_time).select { |p| p.start_time < end_time && p.end_time > start_time }
+    end
+
+    def build_instruction(playlist, start_time, end_time)
+      segment = playlist.segment(start_time, end_time)
+      start_seconds = segment.seconds(start_time).round(4)
+      end_seconds = segment.seconds(end_time).round(4)
+
+      return if start_seconds.negative? || (end_seconds - start_seconds) < 0.2 # avoid corrupted files
+
+      { start_seconds:, end_seconds:,
+        manifest: manifest(segment.file),
+        segment_id: segment.segment_id,
+        width: playlist.width,
+        height: playlist.height }
     end
   end
 end

@@ -4,15 +4,21 @@ module StreamMerger
   # Utils
   module Utils
     TIMESTAMP_REGEX = /\d{4}-\d{2}-\d{2}_\d{2}-\d{2}-\d{2}\.\d{3}/
-    TIMESTAMP_FORMAT = "%Y-%m-%d_%H-%M-%S.%L"
+    TIMESTAMP_FORMAT = "%Y-%m-%d_%H-%M-%S.%L %Z"
+    STREAM_NAME_REGEX = %r{streams/([^/]+)-\d{4}-\d{2}-\d{2}_\d{2}-\d{2}-\d{2}\.\d{3}}
 
     def file_timestamp(file)
       timestamp_str = file[TIMESTAMP_REGEX]
       return unless timestamp_str
 
-      Time.strptime(timestamp_str, TIMESTAMP_FORMAT)
+      Time.strptime("#{timestamp_str} UTC", TIMESTAMP_FORMAT)
     rescue ArgumentError
       nil
+    end
+
+    def stream_name(file)
+      match = file.match(STREAM_NAME_REGEX)
+      match[1] if match
     end
 
     def ffmpeg_duration(url)
@@ -22,8 +28,7 @@ module StreamMerger
     end
 
     def ffmpeg_exact_duration(url)
-      `ffprobe -v error -select_streams v -of \
-      default=noprint_wrappers=1:nokey=1 -show_entries stream=duration #{url}`.to_f
+      `ffprobe -v error -select_streams v:0 -show_entries format=duration -of csv=p=0 #{url}`.to_f
     end
 
     def ffmpeg_resolution(url)
@@ -57,6 +62,12 @@ module StreamMerger
     def convert_to_seconds(duration_str)
       hours, minutes, seconds = duration_str.split(":").map(&:to_f)
       (hours * 3600) + (minutes * 60) + seconds
+    end
+
+    def file_name_with_timestamp(file_name)
+      timestamp = Time.now.utc
+      formatted_timestamp = timestamp.strftime("%Y-%m-%d_%H-%M-%S.") + format("%03d", (timestamp.usec / 1000))
+      "#{file_name}-#{formatted_timestamp}"
     end
   end
 end

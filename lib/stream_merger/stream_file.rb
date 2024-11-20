@@ -3,13 +3,18 @@
 module StreamMerger
   # StreamFile
   class StreamFile
-    attr_reader :path
+    attr_reader :file_name, :path
 
     def initialize(file_name:, extension:, type: "tempfile")
+      @file_name = file_name
       @type = type
       @file = Tempfile.new([file_name, extension])
       @path = @file.path
       create_fifo if fifo?
+    end
+
+    def dirname
+      File.dirname(path)
     end
 
     def write(item, mode = "w")

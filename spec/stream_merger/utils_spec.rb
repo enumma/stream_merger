@@ -9,7 +9,7 @@ RSpec.describe StreamMerger::Utils do
   end
 
   it "calculates exact duration" do
-    expect(dummy_class.ffmpeg_exact_duration(file)).to eq 6.202011
+    expect(dummy_class.ffmpeg_exact_duration(file)).to eq 6.333011
   end
 
   it "returns data" do
@@ -17,6 +17,6 @@ RSpec.describe StreamMerger::Utils do
   end
 
   it "calculates timestamp" do
-    expect(dummy_class.file_timestamp(file)).to eq Time.parse("2024-11-01 19:51:01.198000000")
+    expect(dummy_class.file_timestamp(file)).to eq Time.parse("2024-11-01 19:51:01.198000000 UTC")
   end
 end

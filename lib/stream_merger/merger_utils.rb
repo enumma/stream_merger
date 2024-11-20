@@ -2,27 +2,24 @@
 
 module StreamMerger
   # MergeUtils
-  module MergerUtils # rubocop:disable Metrics/ModuleLength
+  module MergerUtils
     OUTPUT_W = 1080.0
     OUTPUT_H = 1920.0
     ONE_GRID = "[0:v]CROP_I,scale=#{OUTPUT_W}:#{OUTPUT_H}[video]; \
                 [0:a]amix=inputs=1:duration=shortest:dropout_transition=3[audio]".freeze
     TWO_GRID = "[0:v]CROP_I,scale=#{OUTPUT_W}:#{OUTPUT_H / 2}[top]; \
-         [1:v]CROP_I,scale=#{OUTPUT_W}:#{OUTPUT_H / 2}[bottom]; \
-         [top][bottom]vstack=inputs=2:shortest=1[video]; \
+         [1:v]CROP_I,scale=#{OUTPUT_W}:#{OUTPUT_H / 2}[bottom]; [top][bottom]vstack=inputs=2:shortest=1[video]; \
          [0:a][1:a]amix=inputs=2:duration=shortest:dropout_transition=3[audio]".freeze
     THREE_GRID = "[0:v]CROP_I,scale=#{OUTPUT_W}:#{OUTPUT_H / 2}[top]; \
          [1:v]CROP_I,scale=#{OUTPUT_W / 2}:#{OUTPUT_H / 2}[bottom_left]; \
          [2:v]CROP_I,scale=#{OUTPUT_W / 2}:#{OUTPUT_H / 2}[bottom_right]; \
-         [bottom_left][bottom_right]hstack=inputs=2[bottom]; \
-         [top][bottom]vstack=inputs=2:shortest=1[video]; \
+         [bottom_left][bottom_right]hstack=inputs=2[bottom]; [top][bottom]vstack=inputs=2:shortest=1[video]; \
          [0:a][1:a][2:a]amix=inputs=3:duration=shortest:dropout_transition=3[audio]".freeze
     FOUR_GRID = "[0:v]CROP_I,scale=#{OUTPUT_W / 2}:#{OUTPUT_H / 2}[top_left]; \
          [1:v]CROP_I,scale=#{OUTPUT_W / 2}:#{OUTPUT_H / 2}[top_right]; \
          [2:v]CROP_I,scale=#{OUTPUT_W / 2}:#{OUTPUT_H / 2}[bottom_left]; \
          [3:v]CROP_I,scale=#{OUTPUT_W / 2}:#{OUTPUT_H / 2}[bottom_right]; \
-         [top_left][top_right]hstack=inputs=2[top]; \
-         [bottom_left][bottom_right]hstack=inputs=2[bottom]; \
+         [top_left][top_right]hstack=inputs=2[top]; [bottom_left][bottom_right]hstack=inputs=2[bottom]; \
          [top][bottom]vstack=inputs=2:shortest=1[video]; \
          [0:a][1:a][2:a][3:a]amix=inputs=4:duration=shortest:dropout_transition=3[audio]".freeze
 
@@ -43,20 +40,6 @@ module StreamMerger
       run_ffmpeg(cmd)
     end
 
-    # def base_ffmpeg_command(input_files, filter_complex, output = "output")
-    #   <<~CMD
-    #     ffmpeg -hide_banner -loglevel error #{input_files} \
-    #       -err_detect aggressive \
-    #       -filter_complex "#{filter_complex}" \
-    #       -map "[video]" -map "[audio]" -flags +global_header -c:v libx264 \
-    #       -tune zerolatency -preset veryfast -max_delay 500000 -b:v 8000k -bufsize 16000k -r 30 -g 60 \
-    #       -c:a aac -b:a 128k -ar 44100 \
-    #       -f hls -hls_time 5 \
-    #       -hls_playlist_type event \
-    #       -hls_flags delete_segments+append_list #{output}.m3u8
-    #   CMD
-    # end
-
     def base_ffmpeg_command(input_files, filter_complex, output = "output.mkv")
       <<~CMD
         ffmpeg -hide_banner -loglevel error #{input_files} \
@@ -74,7 +57,7 @@ module StreamMerger
         instruction = instructions[index]
         start_seconds = instruction[:start_seconds]
         end_seconds = instruction[:end_seconds]
-        duration = (end_seconds - start_seconds).round(3)
+        duration = end_seconds - start_seconds
         "-ss '#{start_seconds}' -i \"#{stream}\" -t #{duration}"
       end
       input_commands.join(" ")
@@ -137,7 +120,6 @@ module StreamMerger
     end
 
     def run_ffmpeg(command)
-      # puts "Executing FFmpeg command: #{command}"
       process = IO.popen(command)
       Process.waitpid2(process.pid)
       # _pid, status = Process.waitpid2(process.pid)
