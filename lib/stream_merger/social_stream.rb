@@ -11,9 +11,9 @@ module StreamMerger
     IO_FONTSIZE = 44 # Intro and outro fontsize
     W_FONTSIZE = 32 # Watermark fontsize
 
-    def initialize(conference, handle:, stream_key:)
+    def initialize(conference, handle:, stream_keys:)
       @handle = handle
-      @stream_key = stream_key
+      @stream_keys = stream_keys
       file_name = file_name_with_timestamp("#{conference.conference_id}Social")
       @main_m3u8 = StreamMerger::StreamFile.new(file_name:, extension: ".m3u8")
       @concat_pls = StreamFile.new(file_name: "social-concat", extension: ".txt", type: "fifo").path
@@ -32,7 +32,14 @@ module StreamMerger
       else
         concat_feed(files, finish:)
       end
-      youtube_process
+      social_processes
+    end
+
+    def social_processes
+      stream_keys.each do |type, stream_key|
+        @stream_key = stream_key
+        youtube_process if type == "YoutubeStream"
+      end
     end
 
     def youtube_process
@@ -51,8 +58,8 @@ module StreamMerger
     end
 
     def wait_to_finish
-      Process.wait(ffmpeg_process.pid)
-      Process.wait(youtube_process.pid)
+      Process.wait(ffmpeg_process.pid) if ffmpeg_process
+      Process.wait(youtube_process.pid) if youtube_process
     end
 
     private

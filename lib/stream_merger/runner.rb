@@ -8,13 +8,13 @@ module StreamMerger
 
     TIME_LIMIT = 300
 
-    def initialize(conference_id: SecureRandom.hex, stream_ids: [], handle: nil, stream_key: nil)
+    def initialize(conference_id: SecureRandom.hex, stream_ids: [], handle: nil, stream_keys: [])
       @mutex = Mutex.new                 # Mutex to safely modify stream_ids
       @condition = ConditionVariable.new # Condition variable to signal processing completion
       @processing = false
       @stream_ids = stream_ids
       @file_loader = FileLoader.new
-      @conference = Conference.new(conference_id:, handle:, stream_key:)
+      @conference = Conference.new(conference_id:, handle:, stream_keys:)
       @exception = nil
       @hard_stop = false
     end

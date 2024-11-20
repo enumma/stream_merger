@@ -5,11 +5,11 @@ module StreamMerger
   class Conference
     MANIFEST_REGEX = /.+\d{4}-\d{2}-\d{2}_\d{2}-\d{2}-\d{2}\.\d{3}/
 
-    attr_reader :handle, :stream_key, :control_time, :conference_id, :playlist_hash
+    attr_reader :handle, :stream_keys, :control_time, :conference_id, :playlist_hash
 
-    def initialize(stream_key: nil, handle: nil, conference_id: SecureRandom.hex)
+    def initialize(stream_keys: [], handle: nil, conference_id: SecureRandom.hex)
       @handle = handle
-      @stream_key = stream_key
+      @stream_keys = stream_keys
       @playlist_hash = {}
       @merged_instructions = []
       @conference_id = conference_id
@@ -17,7 +17,7 @@ module StreamMerger
     end
 
     def social?
-      !handle.nil? && !stream_key.nil?
+      !handle.nil? && stream_keys.any?
     end
 
     def playlists
