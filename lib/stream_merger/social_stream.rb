@@ -20,48 +20,55 @@ module StreamMerger
       @add_intro = true
     end
 
-    def concat_social(stream_files, finish:) # rubocop:disable Metrics/MethodLength
-      files = stream_files.map do |input|
-        output = StreamMerger::StreamFile.new(file_name: "social-output", extension: ".mkv")
-        watermark_command(input, output)
-        output
-      end
+    def concat_social(stream_files, finish:)
       add_intro if @add_intro
-      if finish
-        add_outro
-      else
-        sleep 0.5 if files.any?
-        concat_feed(files, finish:)
-      end
+
       social_processes
+
+      return add_outro if finish
+
+      stream_files.each do |input|
+        concat_feed([watermark_command(input)], finish:)
+      end
     end
 
     def social_processes
-      youtube_process
-      # @stream_keys.each do |type, stream_key|
-      #   @stream_key = stream_key
-      #   youtube_process if type == "YoutubeStream"
-      # end
+      @stream_keys.each do |type, stream_key|
+        @stream_key = stream_key
+        youtube_process if type == "YoutubeStream"
+      end
     end
 
     def youtube_process
+      return @youtube_process if @youtube_process
+
+      cmd = <<-CMD
+        sleep 3
+        ffmpeg -hide_banner -loglevel error -y \
+        -re -i "#{@main_m3u8.path}" -live_start_index -1 -preset medium -r 30 -g 30 -c:a aac \
+        -f hls -hls_time 1 -hls_playlist_type event -hls_flags append_list \
+        -master_pl_name master.m3u8 \
+        -method PUT -http_persistent 1 \
+        "https://a.upload.youtube.com/http_upload_hls?cid=#{@stream_key}&copy=0&file=master.m3u8"
+      CMD
+
       # cmd = <<-CMD
       #   ffmpeg -hide_banner -loglevel error -y \
-      #   -re -i "#{@main_m3u8.path}" -preset ultrafast -r 30 -g 30 -c:a aac \
+      #   -re -i "asocial.m3u8" -live_start_index -1 -preset ultrafast -r 30 -g 30 -c:a aac \
       #   -f hls -hls_time 1 -hls_playlist_type event -hls_flags append_list \
       #   -master_pl_name master.m3u8 \
       #   -method PUT -http_persistent 1 \
       #   "https://a.upload.youtube.com/http_upload_hls?cid=#{@stream_key}&copy=0&file=master.m3u8"
       # CMD
 
-      cmd = <<-CMD
-        ffmpeg -hide_banner -loglevel error -y \
-        -i "asocial.m3u8" -preset ultrafast -r 30 -g 30 -c:a aac \
-        -f hls -hls_time 1 -hls_playlist_type event -hls_flags append_list \
-        ayoutube.m3u8
-      CMD
+      # cmd = <<-CMD
+      #   ffmpeg -hide_banner -loglevel error -y \
+      #   -re -i "#{@main_m3u8.path}" -live_start_index -1 -preset medium -r 30 -g 30 -c:a aac \
+      #   -f hls -hls_time 1 -hls_playlist_type event -hls_flags append_list \
+      #   ayoutube.m3u8
+      # CMD
 
-      @youtube_process ||= IO.popen(cmd, "w")
+      @youtube_process = IO.popen(cmd, "w")
     end
 
     def wait_to_finish
@@ -73,13 +80,15 @@ module StreamMerger
 
     attr_reader :handle
 
-    def watermark_command(input, output)
+    def watermark_command(input)
+      output = StreamMerger::StreamFile.new(file_name: "social-output", extension: ".mkv")
       `ffmpeg -hide_banner -loglevel error -y \
        -i "#{input.path}" -i "#{watermark_file}" \
        -filter_complex "#{watermark_filter_complex}" \
        -map "[outv_final]" -map 0:a \
        -c:v libx264 -crf 23 -preset ultrafast \
        -c:a aac -b:a 192k -ar 48000 "#{output.path}"`
+      output
     end
 
     def watermark_filter_complex
@@ -121,20 +130,20 @@ module StreamMerger
     def ffmpeg_process
       return @ffmpeg_process if @ffmpeg_process
 
-      # cmd = <<-CMD
-      #   ffmpeg -hide_banner -loglevel error -y -safe 0 -i #{@concat_pls} \
-      #   -preset ultrafast -pix_fmt yuv420p -r 30 -g 30 -c:v libx264 -c:a aac -f hls \
-      #   -hls_time 1 -hls_list_size 0 -hls_flags append_list \
-      #   -hls_segment_filename "#{@main_m3u8.dirname}/#{@main_m3u8.file_name}_%09d.ts" \
-      #   '#{@main_m3u8.path}'
-      # CMD
-
       cmd = <<-CMD
         ffmpeg -hide_banner -loglevel error -y -safe 0 -i #{@concat_pls} \
         -preset ultrafast -pix_fmt yuv420p -r 30 -g 30 -c:v libx264 -c:a aac -f hls \
         -hls_time 1 -hls_list_size 0 -hls_flags append_list \
-        asocial.m3u8
+        -hls_segment_filename "#{@main_m3u8.dirname}/#{@main_m3u8.file_name}_%09d.ts" \
+        '#{@main_m3u8.path}'
       CMD
+
+      # cmd = <<-CMD
+      #   ffmpeg -hide_banner -loglevel error -y -safe 0 -i #{@concat_pls} \
+      #   -preset ultrafast -pix_fmt yuv420p -r 30 -g 30 -c:v libx264 -c:a aac -f hls \
+      #   -hls_time 1 -hls_list_size 0 -hls_flags append_list \
+      #   asocial.m3u8
+      # CMD
 
       @ffmpeg_process = IO.popen(cmd, "w")
     end
@@ -153,7 +162,6 @@ module StreamMerger
       @outro = StreamMerger::StreamFile.new(file_name: "outro", extension: ".mkv")
       intro_outro_command(input, @outro)
       concat_feed([@outro], finish: true)
-      sleep 2
     end
   end
 end

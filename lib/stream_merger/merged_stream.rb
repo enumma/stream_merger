@@ -56,20 +56,20 @@ module StreamMerger
     def ffmpeg_process
       return @ffmpeg_process if @ffmpeg_process
 
-      # cmd = <<-CMD
-      #   ffmpeg -hide_banner -loglevel error -y -safe 0 -i #{@concat_pls} \
-      #   -preset ultrafast -pix_fmt yuv420p -r 30 -g 30 -c:v libx264 -c:a aac -f hls \
-      #   -hls_time 1 -hls_list_size 0 -hls_flags append_list \
-      #   -hls_segment_filename "#{@main_m3u8.dirname}/#{@main_m3u8.file_name}_%09d.ts" \
-      #   '#{@main_m3u8.path}'
-      # CMD
-
       cmd = <<-CMD
         ffmpeg -hide_banner -loglevel error -y -safe 0 -i #{@concat_pls} \
         -preset ultrafast -pix_fmt yuv420p -r 30 -g 30 -c:v libx264 -c:a aac -f hls \
         -hls_time 1 -hls_list_size 0 -hls_flags append_list \
-        amerged.m3u8
+        -hls_segment_filename "#{@main_m3u8.dirname}/#{@main_m3u8.file_name}_%09d.ts" \
+        '#{@main_m3u8.path}'
       CMD
+
+      # cmd = <<-CMD
+      #   ffmpeg -hide_banner -loglevel error -y -safe 0 -i #{@concat_pls} \
+      #   -preset ultrafast -pix_fmt yuv420p -r 30 -g 30 -c:v libx264 -c:a aac -f hls \
+      #   -hls_time 1 -hls_list_size 0 -hls_flags append_list \
+      #   amerged.m3u8
+      # CMD
 
       @ffmpeg_process = IO.popen(cmd, "w")
     end
