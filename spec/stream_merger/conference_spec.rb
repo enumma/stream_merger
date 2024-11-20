@@ -3,8 +3,7 @@
 RSpec.describe StreamMerger::Conference do # rubocop:disable Metrics/BlockLength
   let(:files) { JSON.parse(File.open(file_path("files.json")).read) }
   let(:instructions) { JSON.parse(File.open(file_path("instructions.json")).read) }
-  let(:main_m3u8) {  StreamMerger::StreamFile.new(file_name: "out", extension: ".m3u8") }
-  let(:conference) { StreamMerger::Conference.new(main_m3u8:) }
+  let(:conference) { StreamMerger::Conference.new }
 
   context "when building a playlist" do
     before do
@@ -38,7 +37,9 @@ RSpec.describe StreamMerger::Conference do # rubocop:disable Metrics/BlockLength
     instructions.each do |array|
       array.each do |hash|
         hash[:file] = "" if hash[:file]
+        hash[:segment_id] = "" if hash[:segment_id]
         hash["file"] = "" if hash["file"]
+        hash["segment_id"] = "" if hash["segment_id"]
       end
     end
     instructions

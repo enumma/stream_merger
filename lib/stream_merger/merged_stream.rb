@@ -4,6 +4,7 @@ module StreamMerger
   # MergedStream
   class MergedStream
     include Concat
+    include Utils
     include MergerUtils
 
     attr_reader :file_uploader
@@ -11,10 +12,11 @@ module StreamMerger
     def initialize(conference)
       @conference = conference
       @stream_files = []
-      @main_m3u8 = StreamMerger::StreamFile.new(file_name: "#{conference.conference_id}Merged", extension: ".m3u8")
+      file_name = file_name_with_timestamp("#{conference.conference_id}Merged")
+      @main_m3u8 = StreamMerger::StreamFile.new(file_name:, extension: ".m3u8")
       @concat_pls = StreamFile.new(file_name: "merged-concat", extension: ".txt", type: "fifo").path
       @file_uploader = FileUploader.new(main_m3u8: @main_m3u8)
-      @social_stream = SocialStream.new(conference, handle: conference.handle)
+      @social_stream = SocialStream.new(conference, handle: conference.handle, stream_key: conference.stream_key)
     end
 
     def execute(instructions)
@@ -54,20 +56,12 @@ module StreamMerger
     def ffmpeg_process
       return @ffmpeg_process if @ffmpeg_process
 
-      # cmd = <<-CMD
-      #   ffmpeg -hide_banner -loglevel error -y -safe 0 -i #{@concat_pls} \
-      #   -preset ultrafast -pix_fmt yuv420p -r 30 -g 30 -c:v libx264 -c:a aac -f hls \
-      #   -hls_time 1 -hls_list_size 0 -hls_flags append_list \
-      #   -hls_segment_filename "#{@main_m3u8.dirname}/#{@main_m3u8.file_name}_%06d.ts" \
-      #   '#{@main_m3u8.path}'
-      # CMD
-
       cmd = <<-CMD
         ffmpeg -hide_banner -loglevel error -y -safe 0 -i #{@concat_pls} \
         -preset ultrafast -pix_fmt yuv420p -r 30 -g 30 -c:v libx264 -c:a aac -f hls \
         -hls_time 1 -hls_list_size 0 -hls_flags append_list \
-        -hls_segment_filename "#{@main_m3u8.file_name}_%06d.ts" \
-        '#{@main_m3u8.file_name}.m3u8'
+        -hls_segment_filename "#{@main_m3u8.dirname}/#{@main_m3u8.file_name}_%09d.ts" \
+        '#{@main_m3u8.path}'
       CMD
 
       @ffmpeg_process = IO.popen(cmd, "w")

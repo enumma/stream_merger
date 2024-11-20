@@ -7,7 +7,7 @@ module StreamMerger
 
     attr_reader :handle, :stream_key, :control_time, :conference_id, :playlist_hash
 
-    def initialize(handle:, stream_key:, conference_id: SecureRandom.hex)
+    def initialize(stream_key: nil, handle: nil, conference_id: SecureRandom.hex)
       @handle = handle
       @stream_key = stream_key
       @playlist_hash = {}

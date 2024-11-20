@@ -8,15 +8,15 @@ RSpec.describe StreamMerger::Playlist do
   let(:body) { File.open(file_path("body.txt")).read }
 
   before do
-    playlist.add_segment(file1, Time.now)
+    playlist.add_segment(file: file1, last_modified: Time.now)
   end
 
   it "orders segments" do
-    segments = playlist.add_segment(file2, Time.now)
+    segments = playlist.add_segment(file: file2, last_modified: Time.now)
     expect(segments.size).to eq 2
   end
 
   it "does not repeat segments" do
-    expect(playlist.add_segment(file1, Time.now)).to eq nil
+    expect(playlist.add_segment(file: file1, last_modified: Time.now)).to eq nil
   end
 end

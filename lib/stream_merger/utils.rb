@@ -63,5 +63,11 @@ module StreamMerger
       hours, minutes, seconds = duration_str.split(":").map(&:to_f)
       (hours * 3600) + (minutes * 60) + seconds
     end
+
+    def file_name_with_timestamp(file_name)
+      timestamp = Time.now.utc
+      formatted_timestamp = timestamp.strftime("%Y-%m-%d_%H-%M-%S.") + format("%03d", (timestamp.usec / 1000))
+      "#{file_name}-#{formatted_timestamp}"
+    end
   end
 end

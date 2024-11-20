@@ -1,25 +1,28 @@
 # frozen_string_literal: true
 
 module StreamMerger
-  # SocialStream´
-  class SocialStream
+  # SocialStream
+  class SocialStream # rubocop:disable Metrics/ClassLength
     include Concat
     include MergerUtils
+    include Utils
 
     COMMON_RESOLUTION = "1080x1920" # Define the common resolution for scaling
     IO_FONTSIZE = 44 # Intro and outro fontsize
     W_FONTSIZE = 32 # Watermark fontsize
 
-    def initialize(conference, handle:)
+    def initialize(conference, handle:, stream_key:)
       @handle = handle
-      @main_m3u8 = StreamMerger::StreamFile.new(file_name: "#{conference.conference_id}Social", extension: ".m3u8")
+      @stream_key = stream_key
+      file_name = file_name_with_timestamp("#{conference.conference_id}Social")
+      @main_m3u8 = StreamMerger::StreamFile.new(file_name:, extension: ".m3u8")
       @concat_pls = StreamFile.new(file_name: "social-concat", extension: ".txt", type: "fifo").path
       @add_intro = true
     end
 
-    def concat_social(stream_files, finish:)
+    def concat_social(stream_files, finish:) # rubocop:disable Metrics/MethodLength
       files = stream_files.map do |input|
-        output = StreamMerger::StreamFile.new(file_name: "#{input.file_name}Social", extension: ".mkv")
+        output = StreamMerger::StreamFile.new(file_name: "social-output", extension: ".mkv")
         watermark_command(input, output)
         output
       end
@@ -35,14 +38,13 @@ module StreamMerger
     def youtube_process
       return @youtube_process if @youtube_process
 
-      stream_key = "7dy2-gsj2-m7rk-8j0a-7vxk"
       cmd = <<-CMD
         ffmpeg -hide_banner -loglevel error -y \
-        -re -i "#{@main_m3u8.file_name}.m3u8" -preset ultrafast -r 30 -g 30 -c:a aac \
+        -re -i "#{@main_m3u8.path}" -preset ultrafast -r 30 -g 30 -c:a aac \
         -f hls -hls_time 1 -hls_playlist_type event -hls_flags delete_segments+append_list \
         -master_pl_name master.m3u8 \
         -method PUT -http_persistent 1 \
-        "https://a.upload.youtube.com/http_upload_hls?cid=#{stream_key}&copy=0&file=master.m3u8"
+        "https://a.upload.youtube.com/http_upload_hls?cid=#{@stream_key}&copy=0&file=master.m3u8"
       CMD
 
       @youtube_process = IO.popen(cmd, "w")
@@ -105,20 +107,12 @@ module StreamMerger
     def ffmpeg_process
       return @ffmpeg_process if @ffmpeg_process
 
-      # cmd = <<-CMD
-      #   ffmpeg -hide_banner -loglevel error -y -safe 0 -i #{@concat_pls} \
-      #   -preset ultrafast -pix_fmt yuv420p -r 30 -g 30 -c:v libx264 -c:a aac -f hls \
-      #   -hls_time 1 -hls_list_size 0 -hls_flags append_list \
-      #   -hls_segment_filename "#{@main_m3u8.dirname}/#{@main_m3u8.file_name}_%06d.ts" \
-      #   '#{@main_m3u8.path}'
-      # CMD
-
       cmd = <<-CMD
         ffmpeg -hide_banner -loglevel error -y -safe 0 -i #{@concat_pls} \
         -preset ultrafast -pix_fmt yuv420p -r 30 -g 30 -c:v libx264 -c:a aac -f hls \
         -hls_time 1 -hls_list_size 0 -hls_flags append_list \
-        -hls_segment_filename "#{@main_m3u8.file_name}_%06d.ts" \
-        '#{@main_m3u8.file_name}.m3u8'
+        -hls_segment_filename "#{@main_m3u8.dirname}/#{@main_m3u8.file_name}_%09d.ts" \
+        '#{@main_m3u8.path}'
       CMD
 
       @ffmpeg_process = IO.popen(cmd, "w")

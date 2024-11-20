@@ -2,27 +2,24 @@
 
 module StreamMerger
   # MergeUtils
-  module MergerUtils # rubocop:disable Metrics/ModuleLength
+  module MergerUtils
     OUTPUT_W = 1080.0
     OUTPUT_H = 1920.0
     ONE_GRID = "[0:v]CROP_I,scale=#{OUTPUT_W}:#{OUTPUT_H}[video]; \
                 [0:a]amix=inputs=1:duration=shortest:dropout_transition=3[audio]".freeze
     TWO_GRID = "[0:v]CROP_I,scale=#{OUTPUT_W}:#{OUTPUT_H / 2}[top]; \
-         [1:v]CROP_I,scale=#{OUTPUT_W}:#{OUTPUT_H / 2}[bottom]; \
-         [top][bottom]vstack=inputs=2:shortest=1[video]; \
+         [1:v]CROP_I,scale=#{OUTPUT_W}:#{OUTPUT_H / 2}[bottom]; [top][bottom]vstack=inputs=2:shortest=1[video]; \
          [0:a][1:a]amix=inputs=2:duration=shortest:dropout_transition=3[audio]".freeze
     THREE_GRID = "[0:v]CROP_I,scale=#{OUTPUT_W}:#{OUTPUT_H / 2}[top]; \
          [1:v]CROP_I,scale=#{OUTPUT_W / 2}:#{OUTPUT_H / 2}[bottom_left]; \
          [2:v]CROP_I,scale=#{OUTPUT_W / 2}:#{OUTPUT_H / 2}[bottom_right]; \
-         [bottom_left][bottom_right]hstack=inputs=2[bottom]; \
-         [top][bottom]vstack=inputs=2:shortest=1[video]; \
+         [bottom_left][bottom_right]hstack=inputs=2[bottom]; [top][bottom]vstack=inputs=2:shortest=1[video]; \
          [0:a][1:a][2:a]amix=inputs=3:duration=shortest:dropout_transition=3[audio]".freeze
     FOUR_GRID = "[0:v]CROP_I,scale=#{OUTPUT_W / 2}:#{OUTPUT_H / 2}[top_left]; \
          [1:v]CROP_I,scale=#{OUTPUT_W / 2}:#{OUTPUT_H / 2}[top_right]; \
          [2:v]CROP_I,scale=#{OUTPUT_W / 2}:#{OUTPUT_H / 2}[bottom_left]; \
          [3:v]CROP_I,scale=#{OUTPUT_W / 2}:#{OUTPUT_H / 2}[bottom_right]; \
-         [top_left][top_right]hstack=inputs=2[top]; \
-         [bottom_left][bottom_right]hstack=inputs=2[bottom]; \
+         [top_left][top_right]hstack=inputs=2[top]; [bottom_left][bottom_right]hstack=inputs=2[bottom]; \
          [top][bottom]vstack=inputs=2:shortest=1[video]; \
          [0:a][1:a][2:a][3:a]amix=inputs=4:duration=shortest:dropout_transition=3[audio]".freeze
 

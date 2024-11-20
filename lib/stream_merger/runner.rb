@@ -91,7 +91,7 @@ module StreamMerger
 
     def upload_files
       loop do
-        break if !running? && @conference.upload_files
+        break if !@conference.upload_files && !running?
 
         sleep 1
       end

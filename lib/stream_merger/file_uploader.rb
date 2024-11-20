@@ -9,7 +9,8 @@ module StreamMerger
     def initialize(main_m3u8:)
       @main_m3u8 = main_m3u8
       dirname = File.dirname(main_m3u8.path)
-      @upload_dir = format(UPLOAD_DIR_TEMPLATE, dirname:, file_name: main_m3u8.file_name)
+      file_name = main_m3u8.file_name.split("Merged").first
+      @upload_dir = format(UPLOAD_DIR_TEMPLATE, dirname:, file_name:)
       @uploaded_files = []
     end
 
