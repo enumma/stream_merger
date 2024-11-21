@@ -161,6 +161,7 @@ module StreamMerger
       @outro = StreamMerger::StreamFile.new(file_name: "outro", extension: ".mkv")
       intro_outro_command(input, @outro)
       concat_feed([@outro], finish: true)
+      sleep 5
     end
   end
 end
