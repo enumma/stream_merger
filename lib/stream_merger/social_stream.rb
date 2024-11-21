@@ -18,6 +18,7 @@ module StreamMerger
       @main_m3u8 = StreamMerger::StreamFile.new(file_name:, extension: ".m3u8")
       @concat_pls = StreamFile.new(file_name: "social-concat", extension: ".txt", type: "fifo").path
       @add_intro = true
+      @normal_files = []
     end
 
     def concat_social(stream_files, finish:)
@@ -28,6 +29,7 @@ module StreamMerger
       files = stream_files.map do |input|
         output = StreamMerger::StreamFile.new(file_name: "social-output", extension: ".mkv", type: "normal")
         watermark_command(input, output)
+        @normal_files << output
         output
       end
 
@@ -38,6 +40,10 @@ module StreamMerger
 
     def wait_to_finish
       Process.wait(ffmpeg_process.pid) if ffmpeg_process
+    end
+
+    def purge!
+      @normal_files.each(&:delete)
     end
 
     private
@@ -97,7 +103,7 @@ module StreamMerger
         ffmpeg -hide_banner -loglevel error -y -safe 0 -i #{@concat_pls} \
         -preset ultrafast -pix_fmt yuv420p -r 30 -g 30 -c:v libx264 -c:a aac \
         -method PUT -http_persistent 1 \
-        -map 0 -f tee "[f=hls:hls_time=1:hls_list_size=0:hls_flags=append_list]asocial.m3u8#{social_outputs}"
+        -map 0 -f tee "#{social_outputs}"
       CMD
 
       @ffmpeg_process = IO.popen(cmd, "w")
@@ -105,16 +111,18 @@ module StreamMerger
 
     def social_outputs
       outputs = ""
-      @stream_keys.each { |type, stream_key| outputs << social_output(type, stream_key) }
+      @stream_keys.each_with_index { |(type, stream_key), index| outputs << social_output(index, type, stream_key) }
       outputs
     end
 
-    def social_output(type, stream_key)
+    def social_output(index, type, stream_key)
+      str = ""
+      str << "|" unless index.zero?
       case type
       when "YoutubeStream"
-        # "|[f=hls:hls_time=1:hls_list_size=0:hls_flags=append_list]bsocial.m3u8"
-        "|[f=hls:hls_time=1:hls_list_size=0:hls_flags=append_list]https://a.upload.youtube.com/http_upload_hls?cid=#{stream_key}&copy=0&file=master.m3u8"
+        str << "[f=hls:hls_time=1:hls_list_size=0:hls_flags=append_list]https://a.upload.youtube.com/http_upload_hls?cid=#{stream_key}&copy=0&file=master.m3u8"
       end
+      str
     end
 
     def add_intro

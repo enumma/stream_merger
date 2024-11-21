@@ -38,6 +38,7 @@ module StreamMerger
 
     def purge!
       @stream_files.each(&:delete)
+      @social_stream.purge!
       File.delete(@concat_pls) if File.exist?(@concat_pls)
       @main_m3u8.delete
     end
