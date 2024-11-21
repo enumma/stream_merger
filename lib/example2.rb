@@ -14,7 +14,7 @@ StreamMerger.configure do |config|
 end
 
 runner = StreamMerger::Runner.new(stream_ids: %w[ewbmlXE8Py7L ZqueuFbL1FQj], handle: "@mauricio",
-                                  stream_keys: [%w[YoutubeStream 7dy2-gsj2-m7rk-8j0a-7vxk]])
+                                  stream_keys: [%w[YoutubeStream 6mbf-ve2b-kds3-6s5u-1qc3]])
 # runner = StreamMerger::Runner.new(stream_ids: %w[E3ivaecEHlJr ZOm21G0irMQh diTBkWXcZ5xJ veAAQNHlk7EV])
 runner.start
 loop do
