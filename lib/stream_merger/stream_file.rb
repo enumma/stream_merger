@@ -11,6 +11,7 @@ module StreamMerger
       @file = Tempfile.new([file_name, extension])
       @path = @file.path
       create_fifo if fifo?
+      create_normal if normal?
     end
 
     def dirname
@@ -37,8 +38,20 @@ module StreamMerger
       warn "Failed to create FIFO: #{e.message}"
     end
 
+    def create_normal
+      file.close
+      file.unlink
+      File.open(path, "w") {}
+    rescue StandardError => e
+      warn "Failed to create Normal: #{e.message}"
+    end
+
     def fifo?
       type == "fifo"
+    end
+
+    def normal?
+      type == "normal"
     end
   end
 end

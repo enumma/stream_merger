@@ -8,6 +8,7 @@ module StreamMerger
 
       ffmpeg_process
       write_concat_file(stream_files, finish:)
+      sleep 1
     end
 
     def write_concat_file(stream_files, finish:)
