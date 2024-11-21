@@ -8,7 +8,9 @@ module StreamMerger
 
       ffmpeg_process
       write_concat_file(stream_files, finish:)
-      sleep 1
+      n = stream_files.map { |f| File.size(f.path) / 1_000_000.0 }.sum
+      n = 5 if n < 1
+      sleep n # sleep for big files
     end
 
     def write_concat_file(stream_files, finish:)

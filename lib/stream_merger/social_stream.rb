@@ -1,4 +1,4 @@
-# frozen_string_literal: true
+# frozen_string_literal: false
 
 module StreamMerger
   # SocialStream
@@ -7,7 +7,7 @@ module StreamMerger
     include MergerUtils
     include Utils
 
-    COMMON_RESOLUTION = "1080x1920" # Define the common resolution for scaling
+    COMMON_RESOLUTION = "1080x1920".freeze # Define the common resolution for scaling
     IO_FONTSIZE = 44 # Intro and outro fontsize
     W_FONTSIZE = 32 # Watermark fontsize
 
@@ -23,8 +23,6 @@ module StreamMerger
     def concat_social(stream_files, finish:)
       add_intro if @add_intro
 
-      # social_processes
-
       return add_outro if finish
 
       files = stream_files.map do |input|
@@ -38,47 +36,8 @@ module StreamMerger
       concat_feed(files, finish:)
     end
 
-    def social_processes
-      @stream_keys.each do |type, stream_key|
-        @stream_key = stream_key
-        youtube_process if type == "YoutubeStream"
-      end
-    end
-
-    def youtube_process
-      return @youtube_process if @youtube_process
-
-      # cmd = <<-CMD
-      #   ffmpeg -hide_banner -loglevel error -y \
-      #   -re -i "#{@main_m3u8.path}" -live_start_index -1 -preset medium -r 30 -g 30 -c:a aac \
-      #   -f hls -hls_time 1 -hls_playlist_type event -hls_flags append_list \
-      #   -master_pl_name master.m3u8 \
-      #   -method PUT -http_persistent 1 \
-      #   "https://a.upload.youtube.com/http_upload_hls?cid=#{@stream_key}&copy=0&file=master.m3u8"
-      # CMD
-
-      # cmd = <<-CMD
-      #   ffmpeg -hide_banner -loglevel error -y \
-      #   -re -i "asocial.m3u8" -live_start_index -1 -preset ultrafast -r 30 -g 30 -c:a aac \
-      #   -f hls -hls_time 1 -hls_playlist_type event -hls_flags append_list \
-      #   -master_pl_name master.m3u8 \
-      #   -method PUT -http_persistent 1 \
-      #   "https://a.upload.youtube.com/http_upload_hls?cid=#{@stream_key}&copy=0&file=master.m3u8"
-      # CMD
-
-      # cmd = <<-CMD
-      #   ffmpeg -hide_banner -loglevel error -y \
-      #   -re -i "#{@main_m3u8.path}" -live_start_index -1 -preset medium -r 30 -g 30 -c:a aac \
-      #   -f hls -hls_time 1 -hls_playlist_type event -hls_flags append_list \
-      #   ayoutube.m3u8
-      # CMD
-
-      @youtube_process = IO.popen(cmd, "w")
-    end
-
     def wait_to_finish
       Process.wait(ffmpeg_process.pid) if ffmpeg_process
-      # Process.wait(youtube_process.pid) if youtube_process
     end
 
     private
@@ -134,26 +93,28 @@ module StreamMerger
     def ffmpeg_process
       return @ffmpeg_process if @ffmpeg_process
 
-      # cmd = <<-CMD
-      #   ffmpeg -hide_banner -loglevel error -y -safe 0 -i #{@concat_pls} \
-      #   -preset ultrafast -pix_fmt yuv420p -r 30 -g 30 -c:v libx264 -c:a aac \
-      #   -map 0 -f tee "[f=hls:hls_time=1:hls_list_size=0:hls_flags=append_list]asocial.m3u8|[f=hls:hls_time=1:hls_list_size=0:hls_flags=append_list]https://a.upload.youtube.com/http_upload_hls?cid=7dy2-gsj2-m7rk-8j0a-7vxk&copy=0&file=master.m3u8"
-      # CMD
-
       cmd = <<-CMD
         ffmpeg -hide_banner -loglevel error -y -safe 0 -i #{@concat_pls} \
         -preset ultrafast -pix_fmt yuv420p -r 30 -g 30 -c:v libx264 -c:a aac \
-        -map 0 -f tee "[f=hls:hls_time=1:hls_list_size=0:hls_flags=append_list]asocial.m3u8|[f=hls:hls_time=1:hls_list_size=0:hls_flags=append_list]bsocial.m3u8"
+        -method PUT -http_persistent 1 \
+        -map 0 -f tee "[f=hls:hls_time=1:hls_list_size=0:hls_flags=append_list]asocial.m3u8#{social_outputs}"
       CMD
 
-      # cmd = <<-CMD
-      #   ffmpeg -hide_banner -loglevel error -y -safe 0 -i #{@concat_pls} \
-      #   -preset ultrafast -pix_fmt yuv420p -r 30 -g 30 -c:v libx264 -c:a aac -f hls \
-      #   -hls_time 1 -hls_list_size 0 -hls_flags append_list \
-      #   asocial.m3u8
-      # CMD
-
       @ffmpeg_process = IO.popen(cmd, "w")
+    end
+
+    def social_outputs
+      outputs = ""
+      @stream_keys.each { |type, stream_key| outputs << social_output(type, stream_key) }
+      outputs
+    end
+
+    def social_output(type, stream_key)
+      case type
+      when "YoutubeStream"
+        # "|[f=hls:hls_time=1:hls_list_size=0:hls_flags=append_list]bsocial.m3u8"
+        "|[f=hls:hls_time=1:hls_list_size=0:hls_flags=append_list]https://a.upload.youtube.com/http_upload_hls?cid=#{stream_key}&copy=0&file=master.m3u8"
+      end
     end
 
     def add_intro
