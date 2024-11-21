@@ -43,7 +43,6 @@ module StreamMerger
       return @youtube_process if @youtube_process
 
       cmd = <<-CMD
-        sleep 3
         ffmpeg -hide_banner -loglevel error -y \
         -re -i "#{@main_m3u8.path}" -live_start_index -1 -preset medium -r 30 -g 30 -c:a aac \
         -f hls -hls_time 1 -hls_playlist_type event -hls_flags append_list \
