@@ -43,7 +43,8 @@ module StreamMerger
     end
 
     def purge!
-      @normal_files.each(&:delete)
+      @normal_files.each(&:delete) # Delete normal aux files
+      File.delete(@concat_pls) if File.exist?(@concat_pls) # Delete concatenation list
     end
 
     private
