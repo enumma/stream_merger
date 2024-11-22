@@ -15,7 +15,7 @@ module StreamMerger
     end
 
     def upload_files_in_batches(batch_size: 100)
-      files.each_slice(batch_size) do |file_batch|
+      pending_files.each_slice(batch_size) do |file_batch|
         threads = file_batch.map do |file|
           Thread.new { upload_file(file) }
         end
@@ -24,7 +24,7 @@ module StreamMerger
     end
 
     def more_files_to_upload?
-      files.any? { |file| !videos_bucket.object("streams/#{File.basename(file)}").exists? }
+      pending_files.any? { |file| !videos_bucket.object("streams/#{File.basename(file)}").exists? }
     end
 
     def delete_files
@@ -38,7 +38,11 @@ module StreamMerger
     attr_reader :upload_dir
 
     def files
-      Dir.glob(upload_dir).reject { |file| @uploaded_files.include?(file) }
+      Dir.glob(upload_dir)
+    end
+
+    def pending_files
+      files.reject { |file| @uploaded_files.include?(file) }
     end
 
     def upload_file(file)

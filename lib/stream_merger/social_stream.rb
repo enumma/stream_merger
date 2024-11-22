@@ -1,4 +1,4 @@
-# frozen_string_literal: true
+# frozen_string_literal: false
 
 module StreamMerger
   # SocialStream
@@ -7,7 +7,7 @@ module StreamMerger
     include MergerUtils
     include Utils
 
-    COMMON_RESOLUTION = "1080x1920" # Define the common resolution for scaling
+    COMMON_RESOLUTION = "1080x1920".freeze # Define the common resolution for scaling
     IO_FONTSIZE = 44 # Intro and outro fontsize
     W_FONTSIZE = 32 # Watermark fontsize
 
@@ -18,69 +18,40 @@ module StreamMerger
       @main_m3u8 = StreamMerger::StreamFile.new(file_name:, extension: ".m3u8")
       @concat_pls = StreamFile.new(file_name: "social-concat", extension: ".txt", type: "fifo").path
       @add_intro = true
+      @normal_files = []
     end
 
     def concat_social(stream_files, finish:)
       add_intro if @add_intro
 
-      social_processes
-
       return add_outro if finish
 
-      stream_files.each do |input|
-        concat_feed([watermark_command(input)], finish:)
+      files = stream_files.map do |input|
+        output = StreamMerger::StreamFile.new(file_name: "social-output", extension: ".mkv", type: "normal")
+        watermark_command(input, output)
+        @normal_files << output
+        output
       end
-    end
 
-    def social_processes
-      @stream_keys.each do |type, stream_key|
-        @stream_key = stream_key
-        youtube_process if type == "YoutubeStream"
-      end
-    end
+      return unless files.any?
 
-    def youtube_process
-      return @youtube_process if @youtube_process
-
-      cmd = <<-CMD
-        ffmpeg -hide_banner -loglevel error -y \
-        -re -i "#{@main_m3u8.path}" -live_start_index -1 -preset medium -r 30 -g 30 -c:a aac \
-        -f hls -hls_time 1 -hls_playlist_type event -hls_flags append_list \
-        -master_pl_name master.m3u8 \
-        -method PUT -http_persistent 1 \
-        "https://a.upload.youtube.com/http_upload_hls?cid=#{@stream_key}&copy=0&file=master.m3u8"
-      CMD
-
-      # cmd = <<-CMD
-      #   ffmpeg -hide_banner -loglevel error -y \
-      #   -re -i "asocial.m3u8" -live_start_index -1 -preset ultrafast -r 30 -g 30 -c:a aac \
-      #   -f hls -hls_time 1 -hls_playlist_type event -hls_flags append_list \
-      #   -master_pl_name master.m3u8 \
-      #   -method PUT -http_persistent 1 \
-      #   "https://a.upload.youtube.com/http_upload_hls?cid=#{@stream_key}&copy=0&file=master.m3u8"
-      # CMD
-
-      # cmd = <<-CMD
-      #   ffmpeg -hide_banner -loglevel error -y \
-      #   -re -i "#{@main_m3u8.path}" -live_start_index -1 -preset medium -r 30 -g 30 -c:a aac \
-      #   -f hls -hls_time 1 -hls_playlist_type event -hls_flags append_list \
-      #   ayoutube.m3u8
-      # CMD
-
-      @youtube_process = IO.popen(cmd, "w")
+      concat_feed(files, finish:)
     end
 
     def wait_to_finish
       Process.wait(ffmpeg_process.pid) if ffmpeg_process
-      Process.wait(youtube_process.pid) if youtube_process
+    end
+
+    def purge!
+      @normal_files.each(&:delete) # Delete normal aux files
+      File.delete(@concat_pls) if File.exist?(@concat_pls) # Delete concatenation list
     end
 
     private
 
     attr_reader :handle
 
-    def watermark_command(input)
-      output = StreamMerger::StreamFile.new(file_name: "social-output", extension: ".mkv")
+    def watermark_command(input, output)
       `ffmpeg -hide_banner -loglevel error -y \
        -i "#{input.path}" -i "#{watermark_file}" \
        -filter_complex "#{watermark_filter_complex}" \
@@ -131,20 +102,28 @@ module StreamMerger
 
       cmd = <<-CMD
         ffmpeg -hide_banner -loglevel error -y -safe 0 -i #{@concat_pls} \
-        -preset ultrafast -pix_fmt yuv420p -r 30 -g 30 -c:v libx264 -c:a aac -f hls \
-        -hls_time 1 -hls_list_size 0 -hls_flags append_list \
-        -hls_segment_filename "#{@main_m3u8.dirname}/#{@main_m3u8.file_name}_%09d.ts" \
-        '#{@main_m3u8.path}'
+        -preset ultrafast -pix_fmt yuv420p -r 30 -g 30 -c:v libx264 -c:a aac \
+        -method PUT -http_persistent 1 \
+        -map 0 -f tee "#{social_outputs}"
       CMD
 
-      # cmd = <<-CMD
-      #   ffmpeg -hide_banner -loglevel error -y -safe 0 -i #{@concat_pls} \
-      #   -preset ultrafast -pix_fmt yuv420p -r 30 -g 30 -c:v libx264 -c:a aac -f hls \
-      #   -hls_time 1 -hls_list_size 0 -hls_flags append_list \
-      #   asocial.m3u8
-      # CMD
-
       @ffmpeg_process = IO.popen(cmd, "w")
+    end
+
+    def social_outputs
+      outputs = ""
+      @stream_keys.each_with_index { |(type, stream_key), index| outputs << social_output(index, type, stream_key) }
+      outputs
+    end
+
+    def social_output(index, type, stream_key)
+      str = ""
+      str << "|" unless index.zero?
+      case type
+      when "YoutubeStream"
+        str << "[f=hls:hls_time=1:hls_list_size=0:hls_flags=append_list]https://a.upload.youtube.com/http_upload_hls?cid=#{stream_key}&copy=0&file=master.m3u8"
+      end
+      str
     end
 
     def add_intro
@@ -153,7 +132,6 @@ module StreamMerger
       @intro = StreamMerger::StreamFile.new(file_name: "intro", extension: ".mkv")
       intro_outro_command(input, @intro)
       concat_feed([@intro], finish: false)
-      sleep 2
     end
 
     def add_outro
@@ -161,7 +139,6 @@ module StreamMerger
       @outro = StreamMerger::StreamFile.new(file_name: "outro", extension: ".mkv")
       intro_outro_command(input, @outro)
       concat_feed([@outro], finish: true)
-      sleep 5
     end
   end
 end

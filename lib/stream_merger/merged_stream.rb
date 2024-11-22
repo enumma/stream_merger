@@ -37,9 +37,10 @@ module StreamMerger
     end
 
     def purge!
-      @stream_files.each(&:delete)
-      File.delete(@concat_pls) if File.exist?(@concat_pls)
-      @main_m3u8.delete
+      @stream_files.each(&:delete) # Delete temp aux files
+      File.delete(@concat_pls) if File.exist?(@concat_pls) # Delete concatenation list
+      @file_uploader.delete_files # Delete m3u8 and segments
+      @social_stream.purge! # Purge social stream
     end
 
     def upload_files
