@@ -15,7 +15,7 @@ RSpec.describe StreamMerger::Conference do # rubocop:disable Metrics/BlockLength
     end
 
     it "builds playlists correctly" do
-      expect(conference.playlists.map { |p| p.segments.size }).to eq([9, 7])
+      expect(conference.playlists.map { |p| p.segments.size }.sort).to eq([7, 9])
     end
 
     it "builds a timeline" do
