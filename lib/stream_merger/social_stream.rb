@@ -37,7 +37,7 @@ module StreamMerger
       social_processes
     end
 
-    def social_processes
+    def social_processes # rubocop:disable Metrics/MethodLength
       @stream_keys.each do |type, stream_key|
         case type
         when "YoutubeStream"
