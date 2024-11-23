@@ -15,8 +15,8 @@ module StreamMerger
       @handle = handle
       @stream_keys = stream_keys
       file_name = file_name_with_timestamp("#{conference.conference_id}Social")
-      @main_m3u8 = StreamMerger::StreamFile.new(file_name:, extension: ".m3u8")
-      @concat_pls = StreamFile.new(file_name: "social-concat", extension: ".txt", type: "fifo").path
+      @main_file = StreamMerger::StreamFile.new(file_name:, extension: ".m3u8")
+      @concat_pls = StreamFile.new(file_name: "social-concat#{SecureRandom.hex}", extension: ".txt", type: "fifo").path
       @add_intro = true
       @normal_files = []
     end
@@ -33,13 +33,30 @@ module StreamMerger
         output
       end
 
-      return unless files.any?
-
       concat_feed(files, finish:)
+      social_processes
+    end
+
+    def social_processes
+      @stream_keys.each do |type, stream_key|
+        case type
+        when "YoutubeStream"
+          cmd = <<-CMD
+            sleep 5
+            ffmpeg -live_start_index 0 -re -max_reload 1000000 -m3u8_hold_counters 1000000 -i #{@main_file.path} \
+            -c:v copy -c:a copy -hls_time 1 -hls_list_size 0 \
+            -http_persistent 1 -method POST \
+            'https://a.upload.youtube.com/http_upload_hls?cid=#{stream_key}&copy=0&file=master.m3u8'
+          CMD
+
+          @youtube_process ||= IO.popen(cmd, "w")
+        end
+      end
     end
 
     def wait_to_finish
       Process.wait(ffmpeg_process.pid) if ffmpeg_process
+      Process.wait(@youtube_process.pid) if @youtube_process
     end
 
     def purge!
@@ -102,28 +119,12 @@ module StreamMerger
 
       cmd = <<-CMD
         ffmpeg -hide_banner -loglevel error -y -safe 0 -i #{@concat_pls} \
-        -preset ultrafast -pix_fmt yuv420p -r 30 -g 30 -c:v libx264 -c:a aac \
-        -method PUT -http_persistent 1 \
-        -map 0 -f tee "#{social_outputs}"
+        -preset ultrafast -pix_fmt yuv420p -r 30 -g 30 -c:v libx264 -c:a aac -f hls \
+        -hls_time 1 -hls_list_size 0 -hls_flags append_list \
+        #{@main_file.path}
       CMD
 
       @ffmpeg_process = IO.popen(cmd, "w")
-    end
-
-    def social_outputs
-      outputs = ""
-      @stream_keys.each_with_index { |(type, stream_key), index| outputs << social_output(index, type, stream_key) }
-      outputs
-    end
-
-    def social_output(index, type, stream_key)
-      str = ""
-      str << "|" unless index.zero?
-      case type
-      when "YoutubeStream"
-        str << "[f=hls:hls_time=1:hls_list_size=0:hls_flags=append_list]https://a.upload.youtube.com/http_upload_hls?cid=#{stream_key}&copy=0&file=master.m3u8"
-      end
-      str
     end
 
     def add_intro

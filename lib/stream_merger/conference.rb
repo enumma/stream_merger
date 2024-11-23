@@ -74,6 +74,10 @@ module StreamMerger
       playlists.map(&:segments).flatten
     end
 
+    def wait_to_finish
+      @merged_stream.wait_to_finish
+    end
+
     private
 
     attr_reader :merged_instructions

@@ -14,7 +14,7 @@ module StreamMerger
       @stream_files = []
       file_name = file_name_with_timestamp("#{conference.conference_id}Merged")
       @main_m3u8 = StreamMerger::StreamFile.new(file_name:, extension: ".m3u8")
-      @concat_pls = StreamFile.new(file_name: "merged-concat", extension: ".txt", type: "fifo").path
+      @concat_pls = StreamFile.new(file_name: "merged-concat#{SecureRandom.hex}", extension: ".txt", type: "fifo").path
       @file_uploader = FileUploader.new(main_m3u8: @main_m3u8)
       @social_stream = SocialStream.new(conference, handle: conference.handle, stream_keys: conference.stream_keys)
     end
@@ -50,6 +50,11 @@ module StreamMerger
       true
     end
 
+    def wait_to_finish
+      Process.wait(ffmpeg_process.pid)
+      @social_stream.wait_to_finish if conference.social?
+    end
+
     private
 
     attr_reader :conference
@@ -64,13 +69,6 @@ module StreamMerger
         -hls_segment_filename "#{@main_m3u8.dirname}/#{@main_m3u8.file_name}_%09d.ts" \
         '#{@main_m3u8.path}'
       CMD
-
-      # cmd = <<-CMD
-      #   ffmpeg -hide_banner -loglevel error -y -safe 0 -i #{@concat_pls} \
-      #   -preset ultrafast -pix_fmt yuv420p -r 30 -g 30 -c:v libx264 -c:a aac -f hls \
-      #   -hls_time 1 -hls_list_size 0 -hls_flags append_list \
-      #   amerged.m3u8
-      # CMD
 
       @ffmpeg_process = IO.popen(cmd, "w")
     end
@@ -90,14 +88,8 @@ module StreamMerger
     end
 
     def concat_playlists(stream_files, finish: false)
-      concat_feed(stream_files, finish:)
       @social_stream.concat_social(stream_files, finish:) if conference.social?
-
-      return unless finish
-
-      # Wait to finish
-      Process.wait(ffmpeg_process.pid)
-      @social_stream.wait_to_finish if conference.social?
+      concat_feed(stream_files, finish:)
     end
   end
 end

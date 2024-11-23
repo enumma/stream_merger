@@ -74,7 +74,7 @@ module StreamMerger
 
           if @hard_stop
             conference.add_black_screen(finish: true)
-            sleep 2 # Wait to finish concatenating
+            conference.wait_to_finish
             break
           else
             conference.add_black_screen
@@ -123,7 +123,7 @@ module StreamMerger
 
     def no_data_for_too_long?
       # No new data
-      return (Time.now - @conference.control_time) >= 5 if @conference.control_time
+      return (Time.now - @conference.control_time) >= 15 if @conference.control_time
       return (Time.now - @control_time) >= 50 if @conference.segments.any?
 
       # Waiting for data to arrive

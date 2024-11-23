@@ -42,7 +42,7 @@ module StreamMerger
     end
 
     def pending_files
-      files.reject { |file| @uploaded_files.include?(file) }
+      files.reject { |file| @uploaded_files.include?(file) || file.end_with?(".m3u8") }
     end
 
     def upload_file(file)
@@ -57,7 +57,7 @@ module StreamMerger
     def upload_to_s3(file, force:)
       if file.respond_to?(:file_name)
         path = file.path
-        base_name = file.file_name
+        base_name = file.file_name + File.extname(file.path)
       else
         path = file
         base_name = File.basename(path)
