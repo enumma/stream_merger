@@ -15,10 +15,10 @@ module StreamMerger
       @handle = handle
       @stream_keys = stream_keys
       file_name = file_name_with_timestamp("#{conference.conference_id}Social")
-      @main_file = StreamMerger::StreamFile.new(file_name:, extension: ".m3u8")
+      @main_file = StreamFile.new(file_name:, extension: ".m3u8")
       @concat_pls = StreamFile.new(file_name: "social-concat#{SecureRandom.hex}", extension: ".txt", type: "fifo").path
       @add_intro = true
-      @normal_files = []
+      @stream_files = []
     end
 
     def concat_social(stream_files, finish:)
@@ -27,9 +27,9 @@ module StreamMerger
       return add_outro if finish
 
       files = stream_files.map do |input|
-        output = StreamMerger::StreamFile.new(file_name: "social-output", extension: ".mkv", type: "normal")
+        output = StreamMerger::StreamFile.new(file_name: "social-output", extension: ".mkv")
         watermark_command(input, output)
-        @normal_files << output
+        @stream_files << output
         output
       end
 
@@ -48,7 +48,6 @@ module StreamMerger
             -http_persistent 1 -method POST \
             'https://a.upload.youtube.com/http_upload_hls?cid=#{stream_key}&copy=0&file=master.m3u8'
           CMD
-
           @youtube_process ||= IO.popen(cmd, "w")
         end
       end
@@ -60,7 +59,7 @@ module StreamMerger
     end
 
     def purge!
-      @normal_files.each(&:delete) # Delete normal aux files
+      @stream_files.each(&:delete) # Delete stream aux files
       File.delete(@concat_pls) if File.exist?(@concat_pls) # Delete concatenation list
     end
 
