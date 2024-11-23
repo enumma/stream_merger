@@ -59,8 +59,21 @@ module StreamMerger
     end
 
     def purge!
+      kill_process(ffmpeg_process)
+      kill_process(@youtube_process)
       @stream_files.each(&:delete) # Delete stream aux files
       File.delete(@concat_pls) if File.exist?(@concat_pls) # Delete concatenation list
+    end
+
+    def kill_process(process)
+      return unless process
+
+      Process.kill(9, process.pid)
+      puts "Process #{process.pid} killed successfully."
+    rescue Errno::ESRCH
+      puts "Process #{process.pid} does not exist."
+    rescue Errno::EPERM
+      puts "You do not have permission to kill process #{process.pid}."
     end
 
     private

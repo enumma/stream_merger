@@ -37,6 +37,7 @@ module StreamMerger
     end
 
     def purge!
+      kill_process
       @stream_files.each(&:delete) # Delete temp aux files
       File.delete(@concat_pls) if File.exist?(@concat_pls) # Delete concatenation list
       @file_uploader.delete_files # Delete m3u8 and segments
@@ -53,6 +54,17 @@ module StreamMerger
     def wait_to_finish
       Process.wait(ffmpeg_process.pid)
       @social_stream.wait_to_finish if conference.social?
+    end
+
+    def kill_process
+      return unless ffmpeg_process
+
+      Process.kill(9, ffmpeg_process.pid)
+      puts "Process #{ffmpeg_process.pid} killed successfully."
+    rescue Errno::ESRCH
+      puts "Process #{ffmpeg_process.pid} does not exist."
+    rescue Errno::EPERM
+      puts "You do not have permission to kill process #{ffmpeg_process.pid}."
     end
 
     private
