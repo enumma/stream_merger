@@ -123,7 +123,7 @@ module StreamMerger
 
     def no_data_for_too_long?
       # No new data
-      return (Time.now - @conference.control_time) >= 15 if @conference.control_time
+      return (Time.now - @conference.control_time) >= 10 if @conference.control_time
       return (Time.now - @control_time) >= 50 if @conference.segments.any?
 
       # Waiting for data to arrive
