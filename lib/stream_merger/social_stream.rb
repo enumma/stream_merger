@@ -81,7 +81,7 @@ module StreamMerger
     attr_reader :handle
 
     def watermark_command(input, output)
-      `ffmpeg -hide_banner -loglevel info -y \
+      `ffmpeg -hide_banner -loglevel error -y \
        -i "#{input.path}" -i "#{watermark_file}" \
        -filter_complex "#{watermark_filter_complex}" \
        -map "[outv_final]" -map 0:a \
@@ -99,7 +99,7 @@ module StreamMerger
     end
 
     def intro_outro_command(input, output)
-      `ffmpeg -hide_banner -loglevel info -y \
+      `ffmpeg -hide_banner -loglevel error -y \
         -i "#{input.path}" \
         -filter_complex "#{intro_outro_filter_complex}" \
         -map "[outv_final]" -map 0:a \
@@ -130,7 +130,7 @@ module StreamMerger
       return @ffmpeg_process if @ffmpeg_process
 
       cmd = <<-CMD
-        ffmpeg -hide_banner -loglevel info -y -safe 0 -i #{@concat_pls} \
+        ffmpeg -hide_banner -loglevel error -y -safe 0 -i #{@concat_pls} \
         -preset ultrafast -pix_fmt yuv420p -r 30 -g 30 -c:v libx264 -c:a aac -f hls \
         -hls_time 1 -hls_list_size 0 -hls_flags append_list \
         #{@main_file.path}

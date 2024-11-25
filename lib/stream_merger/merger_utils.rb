@@ -42,7 +42,7 @@ module StreamMerger
 
     def base_ffmpeg_command(input_files, filter_complex, output = "output.mkv")
       <<~CMD
-        ffmpeg -hide_banner -loglevel info #{input_files} \
+        ffmpeg -hide_banner -loglevel error #{input_files} \
           -y -filter_complex "#{filter_complex}" \
           -map "[video]" -map "[audio]" -flags +global_header -c:v libx264 \
           -tune zerolatency -preset ultrafast -max_delay 500000 -b:v 8000k -bufsize 16000k -r 30 -g 30 \
