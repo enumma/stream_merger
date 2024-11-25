@@ -145,12 +145,14 @@ module StreamMerger
       @intro = StreamMerger::StreamFile.new(file_name: "intro", extension: ".mkv")
       intro_outro_command(input, @intro)
       concat_feed([@intro], finish: false)
+      sleep 2
     end
 
     def add_outro
       input = File.open("./lib/social_stream/outro.mkv")
       @outro = StreamMerger::StreamFile.new(file_name: "outro", extension: ".mkv")
       intro_outro_command(input, @outro)
+      sleep 3
       concat_feed([@outro], finish: true)
     end
   end
