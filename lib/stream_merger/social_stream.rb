@@ -22,9 +22,9 @@ module StreamMerger
     end
 
     def concat_social(stream_files, finish:)
-      add_intro if @add_intro
+      # add_intro if @add_intro
 
-      return add_outro if finish
+      # return add_outro if finish
 
       files = stream_files.map do |input|
         output = StreamMerger::StreamFile.new(file_name: "social-output", extension: ".mkv")
@@ -41,13 +41,24 @@ module StreamMerger
       @stream_keys.each do |type, stream_key|
         case type
         when "YoutubeStream"
+          # cmd = <<-CMD
+          #   sleep 5
+          #   ffmpeg -live_start_index 0 -re -max_reload 1000000 -m3u8_hold_counters 1000000 -i #{@main_file.path} \
+          #   -c:v copy -c:a copy -hls_time 1 -hls_list_size 0 \
+          #   -http_persistent 1 -method POST \
+          #   'https://a.upload.youtube.com/http_upload_hls?cid=#{stream_key}&copy=0&file=master.m3u8'
+          # CMD
+
           cmd = <<-CMD
             sleep 5
-            ffmpeg -live_start_index 0 -re -max_reload 1000000 -m3u8_hold_counters 1000000 -i #{@main_file.path} \
-            -c:v copy -c:a copy -hls_time 1 -hls_list_size 0 \
+            ffmpeg -i "#{intro_file}" -live_start_index 0 -re -max_reload 1000000 -m3u8_hold_counters 1000000 -i "#{@main_file.path}" -i "#{outro_file}" \
+            -filter_complex "#{filter_complex}" \
+            -map "[outv_final]" -map "[outa]" -flags +global_header -c:v libx264 \
+            -preset ultrafast -c:a aac -hls_time 1 -hls_list_size 0 -r 30 -g 30 \
             -http_persistent 1 -method POST \
             'https://a.upload.youtube.com/http_upload_hls?cid=#{stream_key}&copy=0&file=master.m3u8'
           CMD
+          puts cmd
           @youtube_process ||= IO.popen(cmd, "w")
         end
       end
@@ -145,15 +156,35 @@ module StreamMerger
       @intro = StreamMerger::StreamFile.new(file_name: "intro", extension: ".mkv")
       intro_outro_command(input, @intro)
       concat_feed([@intro], finish: false)
-      sleep 2
     end
 
     def add_outro
       input = File.open("./lib/social_stream/outro.mkv")
       @outro = StreamMerger::StreamFile.new(file_name: "outro", extension: ".mkv")
       intro_outro_command(input, @outro)
-      sleep 3
       concat_feed([@outro], finish: true)
+    end
+
+    def intro_file
+      input = File.open("./lib/social_stream/intro.mkv")
+      input.path
+    end
+
+    def outro_file
+      input = File.open("./lib/social_stream/outro.mkv")
+      input.path
+    end
+
+    def filter_complex
+      <<~FILTER
+        [0:v]scale=#{COMMON_RESOLUTION}[intro];
+        [intro]drawtext=fontfile=#{intro_outro_font_file}:text='#{handle}':fontsize=#{IO_FONTSIZE}:fontcolor=#1E1E1E:x=(w-text_w)/2:y=(h-text_h)/2+223:alpha='if(gte(t,1.3),min(1,(t-1.3)/1.3),0)'[overlayed_intro];
+        [1:v]scale=#{COMMON_RESOLUTION}[main];
+        [2:v]scale=#{COMMON_RESOLUTION}[outro];
+        [outro]drawtext=fontfile=#{intro_outro_font_file}:text='#{handle}':fontsize=#{IO_FONTSIZE}:fontcolor=#1E1E1E:x=(w-text_w)/2:y=(h-text_h)/2+223:alpha='if(gte(t,1.3),min(1,(t-1.3)/1.3),0)'[overlayed_outro];
+        [overlayed_intro][0:a][main][1:a][overlayed_outro][2:a]concat=n=3:v=1:a=1[outv][outa]; \
+        [outv]format=yuv420p[outv_final]
+      FILTER
     end
   end
 end
