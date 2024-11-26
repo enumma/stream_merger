@@ -7,9 +7,10 @@ module StreamMerger
 
     W_FONTSIZE = 32 # Watermark fontsize
 
-    attr_reader :segment_id, :file, :start_time, :end_time, :last_modified, :mkv, :duration
+    attr_reader :song, :segment_id, :file, :start_time, :end_time, :last_modified, :mkv, :duration
 
     def initialize(file:, last_modified:)
+      @song = !file.match("song").nil?
       @segment_id = SecureRandom.hex
       @file = file
       @last_modified = last_modified

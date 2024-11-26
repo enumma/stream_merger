@@ -114,7 +114,8 @@ module StreamMerger
 
       return if start_seconds.negative? || (end_seconds - start_seconds) < 0.2 # avoid corrupted files
 
-      { start_seconds:, end_seconds:,
+      { song: segment.song,
+        start_seconds:, end_seconds:,
         manifest: manifest(segment.file),
         segment_id: segment.segment_id,
         width: playlist.width,

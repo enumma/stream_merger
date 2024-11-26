@@ -1,6 +1,7 @@
 [
     [
         {
+            "song": false,
             "start_seconds": 0.0,
             "end_seconds": 0.747,
             "manifest": "ewbmlXE8Py7L-2024-11-01_19-51-01.198.m3u8",
@@ -11,6 +12,7 @@
     ],
     [
         {
+            "song": false,
             "start_seconds": 0.747,
             "end_seconds": 6.33,
             "manifest": "ewbmlXE8Py7L-2024-11-01_19-51-01.198.m3u8",
@@ -19,6 +21,7 @@
             "height": 352
         },
         {
+            "song": false,
             "start_seconds": 0.0,
             "end_seconds": 5.583,
             "manifest": "ZqueuFbL1FQj-2024-11-01_19-51-01.945.m3u8",
@@ -29,6 +32,7 @@
     ],
     [
         {
+            "song": false,
             "start_seconds": 0.0,
             "end_seconds": 0.557,
             "manifest": "ewbmlXE8Py7L-2024-11-01_19-51-01.198.m3u8",
@@ -37,6 +41,7 @@
             "height": 352
         },
         {
+            "song": false,
             "start_seconds": 5.583,
             "end_seconds": 6.14,
             "manifest": "ZqueuFbL1FQj-2024-11-01_19-51-01.945.m3u8",
@@ -47,6 +52,7 @@
     ],
     [
         {
+            "song": false,
             "start_seconds": 0.557,
             "end_seconds": 4.24,
             "manifest": "ewbmlXE8Py7L-2024-11-01_19-51-01.198.m3u8",
@@ -55,6 +61,7 @@
             "height": 352
         },
         {
+            "song": false,
             "start_seconds": 0.0,
             "end_seconds": 3.683,
             "manifest": "ZqueuFbL1FQj-2024-11-01_19-51-01.945.m3u8",
@@ -65,6 +72,7 @@
     ],
     [
         {
+            "song": false,
             "start_seconds": 0.0,
             "end_seconds": 0.397,
             "manifest": "ewbmlXE8Py7L-2024-11-01_19-51-01.198.m3u8",
@@ -73,6 +81,7 @@
             "height": 352
         },
         {
+            "song": false,
             "start_seconds": 3.683,
             "end_seconds": 4.08,
             "manifest": "ZqueuFbL1FQj-2024-11-01_19-51-01.945.m3u8",
@@ -83,6 +92,7 @@
     ],
     [
         {
+            "song": false,
             "start_seconds": 0.397,
             "end_seconds": 6.25,
             "manifest": "ewbmlXE8Py7L-2024-11-01_19-51-01.198.m3u8",
@@ -91,6 +101,7 @@
             "height": 352
         },
         {
+            "song": false,
             "start_seconds": 0.0,
             "end_seconds": 5.853,
             "manifest": "ZqueuFbL1FQj-2024-11-01_19-51-01.945.m3u8",
@@ -101,6 +112,7 @@
     ],
     [
         {
+            "song": false,
             "start_seconds": 0.0,
             "end_seconds": 0.287,
             "manifest": "ewbmlXE8Py7L-2024-11-01_19-51-01.198.m3u8",
@@ -109,6 +121,7 @@
             "height": 352
         },
         {
+            "song": false,
             "start_seconds": 5.853,
             "end_seconds": 6.14,
             "manifest": "ZqueuFbL1FQj-2024-11-01_19-51-01.945.m3u8",
@@ -119,6 +132,7 @@
     ],
     [
         {
+            "song": false,
             "start_seconds": 0.287,
             "end_seconds": 4.17,
             "manifest": "ewbmlXE8Py7L-2024-11-01_19-51-01.198.m3u8",
@@ -127,6 +141,7 @@
             "height": 352
         },
         {
+            "song": false,
             "start_seconds": 0.0,
             "end_seconds": 3.883,
             "manifest": "ZqueuFbL1FQj-2024-11-01_19-51-01.945.m3u8",
@@ -137,6 +152,7 @@
     ],
     [
         {
+            "song": false,
             "start_seconds": 0.187,
             "end_seconds": 6.23,
             "manifest": "ewbmlXE8Py7L-2024-11-01_19-51-01.198.m3u8",
@@ -145,6 +161,7 @@
             "height": 352
         },
         {
+            "song": false,
             "start_seconds": 0.0,
             "end_seconds": 6.043,
             "manifest": "ZqueuFbL1FQj-2024-11-01_19-51-01.945.m3u8",
@@ -155,6 +172,7 @@
     ],
     [
         {
+            "song": false,
             "start_seconds": 0.057,
             "end_seconds": 4.147,
             "manifest": "ewbmlXE8Py7L-2024-11-01_19-51-01.198.m3u8",
@@ -163,6 +181,7 @@
             "height": 352
         },
         {
+            "song": false,
             "start_seconds": 0.0,
             "end_seconds": 4.09,
             "manifest": "ZqueuFbL1FQj-2024-11-01_19-51-01.945.m3u8",
@@ -173,6 +192,7 @@
     ],
     [
         {
+            "song": false,
             "start_seconds": 0.0,
             "end_seconds": 1.777,
             "manifest": "ewbmlXE8Py7L-2024-11-01_19-51-01.198.m3u8",
@@ -181,6 +201,7 @@
             "height": 352
         },
         {
+            "song": false,
             "start_seconds": 0.073,
             "end_seconds": 1.85,
             "manifest": "ZqueuFbL1FQj-2024-11-01_19-51-01.945.m3u8",
@@ -191,6 +212,7 @@
     ],
     [
         {
+            "song": false,
             "start_seconds": 1.777,
             "end_seconds": 6.2,
             "manifest": "ewbmlXE8Py7L-2024-11-01_19-51-01.198.m3u8",
@@ -201,6 +223,7 @@
     ],
     [
         {
+            "song": false,
             "start_seconds": 0.0,
             "end_seconds": 4.2,
             "manifest": "ewbmlXE8Py7L-2024-11-01_19-51-01.198.m3u8",
@@ -211,6 +234,7 @@
     ],
     [
         {
+            "song": false,
             "start_seconds": 0.0,
             "end_seconds": 4.33,
             "manifest": "ewbmlXE8Py7L-2024-11-01_19-51-01.198.m3u8",
