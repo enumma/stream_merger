@@ -19,7 +19,7 @@ module StreamMerger
     end
 
     def write(item, mode = "w")
-      File.open(path, mode) { |fifo| fifo.write(item) }
+      File.open(path, mode) { |f| f.write(item) }
     end
 
     def delete

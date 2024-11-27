@@ -53,16 +53,21 @@ module StreamMerger
     end
 
     def grid_filter
+      grid_layout = participant_grid
+      grid_layout = "[0:v]null[video_grid];" unless participants.any?
+      grid_layout + video_filter + audio_filter
+    end
+
+    private
+
+    def participant_grid
       grid_layout = GRIDS[participants.size - 1]
       participants.each_with_index do |stream, idx|
         crop_filter = build_crop_filter(stream, idx, participants.size)
         grid_layout = grid_layout.sub("CROP_I", crop_filter)
       end
-
-      grid_layout + video_filter + audio_filter
+      grid_layout
     end
-
-    private
 
     def input(instruction)
       stream = instruction[:file]
@@ -126,7 +131,7 @@ module StreamMerger
         filter_str << "[#{index}:a]"
       end
       filter_str << "[#{total_inputs - 1}:a]" if song
-      filter_str << "amix=inputs=#{total_inputs}:duration=shortest:dropout_transition=3[audio]"
+      filter_str << "amix=inputs=#{total_inputs}:duration=shortest[audio]"
     end
   end
 end
