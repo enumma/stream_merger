@@ -34,6 +34,8 @@ module StreamMerger
     def ffmpeg_resolution(url)
       json_str = `ffprobe -v error -select_streams v:0 -show_entries stream=width,height -of json '#{url}'`
       resolution = JSON.parse(json_str)["streams"].first
+      return nil unless resolution
+
       width = resolution["width"]
       height = resolution["height"]
       { width:, height: }

@@ -41,7 +41,6 @@ module StreamMerger
       @song = instructions.find { |i| i[:song] }
       @total_inputs = @participants.size
       @total_inputs += 1 if @song
-      validate_grid_size
     end
 
     def inputs
@@ -71,11 +70,6 @@ module StreamMerger
       end_seconds = instruction[:end_seconds]
       duration = end_seconds - start_seconds
       "-ss '#{start_seconds}' -i \"#{stream}\" -t #{duration}"
-    end
-
-    def validate_grid_size
-      size = participants.size
-      raise Error, "Unsupported grid for #{size}" if GRIDS[size - 1].nil?
     end
 
     def build_crop_filter(stream, index, total_streams)

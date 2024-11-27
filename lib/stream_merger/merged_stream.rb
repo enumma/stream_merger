@@ -22,7 +22,7 @@ module StreamMerger
     def execute(instructions)
       stream_files = instructions.map do |instruction|
         create_merged_file(file_instructions(instruction))
-      end
+      end.compact
       return false unless stream_files.any?
 
       concat_playlists(stream_files, finish: false)
@@ -94,6 +94,8 @@ module StreamMerger
     end
 
     def create_merged_file(instructions)
+      return nil unless instructions.select { |i| i[:song] == false }.any? # No participants on stream
+
       stream_file = StreamFile.new(file_name: "merged-output", extension: ".mkv")
       merge_streams(instructions, stream_file.path)
       stream_file

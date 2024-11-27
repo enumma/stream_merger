@@ -49,18 +49,30 @@ module StreamMerger
           #   'https://a.upload.youtube.com/http_upload_hls?cid=#{stream_key}&copy=0&file=master.m3u8'
           # CMD
 
+          # cmd = <<-CMD
+          #   sleep 15
+          #   ffmpeg -hide_banner -loglevel error -y \
+          #   -i "#{intro_file}" \
+          #   -live_start_index 0 -re -max_reload 1000000 -m3u8_hold_counters 1000000 -i "#{@main_file.path}" \
+          #   -i "#{outro_file}" \
+          #   -filter_complex "#{filter_complex}" \
+          #   -map "[outv_final]" -map "[outa]" -flags +global_header -c:v libx264 \
+          #   -tune zerolatency -preset ultrafast \
+          #   -max_delay 500000 -bufsize 16000k -c:a aac -hls_time 1 -hls_list_size 0 -r 30 -g 30 \
+          #   -http_persistent 1 -method POST \
+          #   'https://a.upload.youtube.com/http_upload_hls?cid=#{stream_key}&copy=0&file=master.m3u8'
+          # CMD
           cmd = <<-CMD
-            sleep 15
-            ffmpeg -hide_banner -loglevel error -y \
-            -i "#{intro_file}" \
-            -live_start_index 0 -re -max_reload 1000000 -m3u8_hold_counters 1000000 -i "#{@main_file.path}" \
-            -i "#{outro_file}" \
-            -filter_complex "#{filter_complex}" \
-            -map "[outv_final]" -map "[outa]" -flags +global_header -c:v libx264 \
-            -tune zerolatency -preset ultrafast \
-            -max_delay 500000 -bufsize 16000k -c:a aac -hls_time 1 -hls_list_size 0 -r 30 -g 30 \
-            -http_persistent 1 -method POST \
-            'https://a.upload.youtube.com/http_upload_hls?cid=#{stream_key}&copy=0&file=master.m3u8'
+          sleep 15
+          ffmpeg -hide_banner -loglevel error -y \
+          -i "#{intro_file}" \
+          -live_start_index 0 -re -max_reload 1000000 -m3u8_hold_counters 1000000 -i "#{@main_file.path}" \
+          -i "#{outro_file}" \
+          -filter_complex "#{filter_complex}" \
+          -map "[outv_final]" -map "[outa]" -flags +global_header -c:v libx264 \
+          -tune zerolatency -preset ultrafast \
+          -max_delay 500000 -bufsize 16000k -c:a aac -hls_time 1 -hls_list_size 0 -r 30 -g 30 \
+          asocial.m3u8
           CMD
           @youtube_process ||= IO.popen(cmd, "w")
         end
