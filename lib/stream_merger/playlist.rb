@@ -60,6 +60,8 @@ module StreamMerger
       return if @width && @height
 
       h = ffmpeg_resolution(file)
+      return unless h
+
       @width = h[:width]
       @height = h[:height]
     end

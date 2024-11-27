@@ -13,7 +13,7 @@ module StreamMerger
       @conference = conference
       @stream_files = []
       file_name = file_name_with_timestamp("#{conference.conference_id}Merged")
-      @main_m3u8 = StreamMerger::StreamFile.new(file_name:, extension: ".m3u8")
+      @main_m3u8 = StreamFile.new(file_name:, extension: ".m3u8")
       @concat_pls = StreamFile.new(file_name: "merged-concat#{SecureRandom.hex}", extension: ".txt", type: "fifo").path
       @file_uploader = FileUploader.new(main_m3u8: @main_m3u8)
       @social_stream = SocialStream.new(conference, handle: conference.handle, stream_keys: conference.stream_keys)
@@ -22,7 +22,7 @@ module StreamMerger
     def execute(instructions)
       stream_files = instructions.map do |instruction|
         create_merged_file(file_instructions(instruction))
-      end
+      end.compact
       return false unless stream_files.any?
 
       concat_playlists(stream_files, finish: false)
@@ -100,8 +100,10 @@ module StreamMerger
     end
 
     def concat_playlists(stream_files, finish: false)
-      @social_stream.concat_social(stream_files, finish:) if conference.social?
       concat_feed(stream_files, finish:)
+      return unless conference.social?
+
+      @social_stream.concat_social(stream_files, finish:)
     end
   end
 end

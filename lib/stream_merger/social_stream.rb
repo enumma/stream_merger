@@ -22,17 +22,12 @@ module StreamMerger
     end
 
     def concat_social(stream_files, finish:)
-      # add_intro if @add_intro
-
-      # return add_outro if finish
-
       files = stream_files.map do |input|
-        output = StreamMerger::StreamFile.new(file_name: "social-output", extension: ".mkv")
+        output = StreamFile.new(file_name: "social-output", extension: ".mkv")
         watermark_command(input, output)
         @stream_files << output
         output
       end
-
       concat_feed(files, finish:)
       social_processes
     end
@@ -41,16 +36,8 @@ module StreamMerger
       @stream_keys.each do |type, stream_key|
         case type
         when "YoutubeStream"
-          # cmd = <<-CMD
-          #   sleep 5
-          #   ffmpeg -live_start_index 0 -re -max_reload 1000000 -m3u8_hold_counters 1000000 -i #{@main_file.path} \
-          #   -c:v copy -c:a copy -hls_time 1 -hls_list_size 0 \
-          #   -http_persistent 1 -method POST \
-          #   'https://a.upload.youtube.com/http_upload_hls?cid=#{stream_key}&copy=0&file=master.m3u8'
-          # CMD
-
           cmd = <<-CMD
-            sleep 15
+            sleep 5
             ffmpeg -hide_banner -loglevel error -y \
             -i "#{intro_file}" \
             -live_start_index 0 -re -max_reload 1000000 -m3u8_hold_counters 1000000 -i "#{@main_file.path}" \
@@ -68,12 +55,12 @@ module StreamMerger
     end
 
     def wait_to_finish
-      Process.wait(ffmpeg_process.pid) if ffmpeg_process
+      Process.wait(@ffmpeg_process.pid) if @ffmpeg_process
       Process.wait(@youtube_process.pid) if @youtube_process
     end
 
     def purge!
-      kill_process(ffmpeg_process)
+      kill_process(@ffmpeg_process)
       kill_process(@youtube_process)
       @stream_files.each(&:delete) # Delete stream aux files
       File.delete(@concat_pls) if File.exist?(@concat_pls) # Delete concatenation list
@@ -151,21 +138,6 @@ module StreamMerger
       CMD
 
       @ffmpeg_process = IO.popen(cmd, "w")
-    end
-
-    def add_intro
-      @add_intro = false
-      input = File.open("./lib/social_stream/intro.mkv")
-      @intro = StreamMerger::StreamFile.new(file_name: "intro", extension: ".mkv")
-      intro_outro_command(input, @intro)
-      concat_feed([@intro], finish: false)
-    end
-
-    def add_outro
-      input = File.open("./lib/social_stream/outro.mkv")
-      @outro = StreamMerger::StreamFile.new(file_name: "outro", extension: ".mkv")
-      intro_outro_command(input, @outro)
-      concat_feed([@outro], finish: true)
     end
 
     def intro_file

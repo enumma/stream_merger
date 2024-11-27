@@ -70,9 +70,11 @@ module StreamMerger
         next if conference.execute
 
         if no_data_for_too_long?
+          sleep 2 # wait to finish
           next if conference.execute(pop: false) # execute remaining safe
 
           if @hard_stop
+            sleep 2 # wait to finish
             conference.add_black_screen(finish: true)
             conference.wait_to_finish
             break
@@ -123,7 +125,7 @@ module StreamMerger
 
     def no_data_for_too_long?
       # No new data
-      return (Time.now - @conference.control_time) >= 10 if @conference.control_time
+      return (Time.now - @conference.control_time) >= 5 if @conference.control_time
       return (Time.now - @control_time) >= 50 if @conference.segments.any?
 
       # Waiting for data to arrive

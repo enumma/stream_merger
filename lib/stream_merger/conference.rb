@@ -48,9 +48,10 @@ module StreamMerger
 
     def build_instructions(pop:)
       complete_set = timeline.map do |start_time, end_time|
-        concurrent(start_time, end_time).map do |playlist|
+        instruction_set = concurrent(start_time, end_time).map do |playlist|
           build_instruction(playlist, start_time, end_time)
         end.compact
+        ensure_participants(instruction_set)
       end.reject(&:empty?)
 
       popped_set = complete_set.dup
@@ -114,11 +115,18 @@ module StreamMerger
 
       return if start_seconds.negative? || (end_seconds - start_seconds) < 0.2 # avoid corrupted files
 
-      { start_seconds:, end_seconds:,
+      { song: segment.song,
+        start_seconds:, end_seconds:,
         manifest: manifest(segment.file),
         segment_id: segment.segment_id,
         width: playlist.width,
         height: playlist.height }
+    end
+
+    def ensure_participants(instruction_set)
+      return instruction_set if instruction_set.select { |i| i[:song] == false }.any?
+
+      []
     end
   end
 end
