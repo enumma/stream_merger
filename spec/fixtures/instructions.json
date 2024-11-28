@@ -14,7 +14,7 @@
         {
             "song": false,
             "start_seconds": 0.747,
-            "end_seconds": 6.333,
+            "end_seconds": 6.144,
             "manifest": "ewbmlXE8Py7L-2024-11-01_19-51-01.198.m3u8",
             "segment_id": "",
             "width": 288,
@@ -23,7 +23,7 @@
         {
             "song": false,
             "start_seconds": 0.0,
-            "end_seconds": 5.586,
+            "end_seconds": 5.397,
             "manifest": "ZqueuFbL1FQj-2024-11-01_19-51-01.945.m3u8",
             "segment_id": "",
             "width": 352,
@@ -34,7 +34,7 @@
         {
             "song": false,
             "start_seconds": 0.0,
-            "end_seconds": 0.551,
+            "end_seconds": 0.683,
             "manifest": "ewbmlXE8Py7L-2024-11-01_19-51-01.198.m3u8",
             "segment_id": "",
             "width": 288,
@@ -42,8 +42,8 @@
         },
         {
             "song": false,
-            "start_seconds": 5.586,
-            "end_seconds": 6.137,
+            "start_seconds": 5.397,
+            "end_seconds": 6.08,
             "manifest": "ZqueuFbL1FQj-2024-11-01_19-51-01.945.m3u8",
             "segment_id": "",
             "width": 352,
@@ -53,8 +53,8 @@
     [
         {
             "song": false,
-            "start_seconds": 0.551,
-            "end_seconds": 4.235,
+            "start_seconds": 0.683,
+            "end_seconds": 4.053,
             "manifest": "ewbmlXE8Py7L-2024-11-01_19-51-01.198.m3u8",
             "segment_id": "",
             "width": 288,
@@ -63,47 +63,7 @@
         {
             "song": false,
             "start_seconds": 0.0,
-            "end_seconds": 3.684,
-            "manifest": "ZqueuFbL1FQj-2024-11-01_19-51-01.945.m3u8",
-            "segment_id": "",
-            "width": 352,
-            "height": 288
-        }
-    ],
-    [
-        {
-            "song": false,
-            "start_seconds": 0.0,
-            "end_seconds": 0.398,
-            "manifest": "ewbmlXE8Py7L-2024-11-01_19-51-01.198.m3u8",
-            "segment_id": "",
-            "width": 288,
-            "height": 352
-        },
-        {
-            "song": false,
-            "start_seconds": 3.684,
-            "end_seconds": 4.082,
-            "manifest": "ZqueuFbL1FQj-2024-11-01_19-51-01.945.m3u8",
-            "segment_id": "",
-            "width": 352,
-            "height": 288
-        }
-    ],
-    [
-        {
-            "song": false,
-            "start_seconds": 0.398,
-            "end_seconds": 6.25,
-            "manifest": "ewbmlXE8Py7L-2024-11-01_19-51-01.198.m3u8",
-            "segment_id": "",
-            "width": 288,
-            "height": 352
-        },
-        {
-            "song": false,
-            "start_seconds": 0.0,
-            "end_seconds": 5.852,
+            "end_seconds": 3.37,
             "manifest": "ZqueuFbL1FQj-2024-11-01_19-51-01.945.m3u8",
             "segment_id": "",
             "width": 352,
@@ -114,7 +74,7 @@
         {
             "song": false,
             "start_seconds": 0.0,
-            "end_seconds": 0.291,
+            "end_seconds": 0.64,
             "manifest": "ewbmlXE8Py7L-2024-11-01_19-51-01.198.m3u8",
             "segment_id": "",
             "width": 288,
@@ -122,8 +82,8 @@
         },
         {
             "song": false,
-            "start_seconds": 5.852,
-            "end_seconds": 6.143,
+            "start_seconds": 3.37,
+            "end_seconds": 4.01,
             "manifest": "ZqueuFbL1FQj-2024-11-01_19-51-01.945.m3u8",
             "segment_id": "",
             "width": 352,
@@ -133,8 +93,8 @@
     [
         {
             "song": false,
-            "start_seconds": 0.291,
-            "end_seconds": 4.165,
+            "start_seconds": 0.64,
+            "end_seconds": 6.08,
             "manifest": "ewbmlXE8Py7L-2024-11-01_19-51-01.198.m3u8",
             "segment_id": "",
             "width": 288,
@@ -143,47 +103,7 @@
         {
             "song": false,
             "start_seconds": 0.0,
-            "end_seconds": 3.874,
-            "manifest": "ZqueuFbL1FQj-2024-11-01_19-51-01.945.m3u8",
-            "segment_id": "",
-            "width": 352,
-            "height": 288
-        }
-    ],
-    [
-        {
-            "song": false,
-            "start_seconds": 0.194,
-            "end_seconds": 6.225,
-            "manifest": "ewbmlXE8Py7L-2024-11-01_19-51-01.198.m3u8",
-            "segment_id": "",
-            "width": 288,
-            "height": 352
-        },
-        {
-            "song": false,
-            "start_seconds": 0.0,
-            "end_seconds": 6.031,
-            "manifest": "ZqueuFbL1FQj-2024-11-01_19-51-01.945.m3u8",
-            "segment_id": "",
-            "width": 352,
-            "height": 288
-        }
-    ],
-    [
-        {
-            "song": false,
-            "start_seconds": 0.065,
-            "end_seconds": 4.15,
-            "manifest": "ewbmlXE8Py7L-2024-11-01_19-51-01.198.m3u8",
-            "segment_id": "",
-            "width": 288,
-            "height": 352
-        },
-        {
-            "song": false,
-            "start_seconds": 0.0,
-            "end_seconds": 4.085,
+            "end_seconds": 5.44,
             "manifest": "ZqueuFbL1FQj-2024-11-01_19-51-01.945.m3u8",
             "segment_id": "",
             "width": 352,
@@ -194,7 +114,7 @@
         {
             "song": false,
             "start_seconds": 0.0,
-            "end_seconds": 1.781,
+            "end_seconds": 0.661,
             "manifest": "ewbmlXE8Py7L-2024-11-01_19-51-01.198.m3u8",
             "segment_id": "",
             "width": 288,
@@ -202,8 +122,8 @@
         },
         {
             "song": false,
-            "start_seconds": 0.067,
-            "end_seconds": 1.848,
+            "start_seconds": 5.44,
+            "end_seconds": 6.101,
             "manifest": "ZqueuFbL1FQj-2024-11-01_19-51-01.945.m3u8",
             "segment_id": "",
             "width": 352,
@@ -213,8 +133,148 @@
     [
         {
             "song": false,
-            "start_seconds": 1.781,
-            "end_seconds": 6.203,
+            "start_seconds": 0.661,
+            "end_seconds": 4.01,
+            "manifest": "ewbmlXE8Py7L-2024-11-01_19-51-01.198.m3u8",
+            "segment_id": "",
+            "width": 288,
+            "height": 352
+        },
+        {
+            "song": false,
+            "start_seconds": 0.0,
+            "end_seconds": 3.349,
+            "manifest": "ZqueuFbL1FQj-2024-11-01_19-51-01.945.m3u8",
+            "segment_id": "",
+            "width": 352,
+            "height": 288
+        }
+    ],
+    [
+        {
+            "song": false,
+            "start_seconds": 0.0,
+            "end_seconds": 0.661,
+            "manifest": "ewbmlXE8Py7L-2024-11-01_19-51-01.198.m3u8",
+            "segment_id": "",
+            "width": 288,
+            "height": 352
+        },
+        {
+            "song": false,
+            "start_seconds": 3.349,
+            "end_seconds": 4.01,
+            "manifest": "ZqueuFbL1FQj-2024-11-01_19-51-01.945.m3u8",
+            "segment_id": "",
+            "width": 352,
+            "height": 288
+        }
+    ],
+    [
+        {
+            "song": false,
+            "start_seconds": 0.661,
+            "end_seconds": 6.08,
+            "manifest": "ewbmlXE8Py7L-2024-11-01_19-51-01.198.m3u8",
+            "segment_id": "",
+            "width": 288,
+            "height": 352
+        },
+        {
+            "song": false,
+            "start_seconds": 0.0,
+            "end_seconds": 5.419,
+            "manifest": "ZqueuFbL1FQj-2024-11-01_19-51-01.945.m3u8",
+            "segment_id": "",
+            "width": 352,
+            "height": 288
+        }
+    ],
+    [
+        {
+            "song": false,
+            "start_seconds": 0.0,
+            "end_seconds": 0.618,
+            "manifest": "ewbmlXE8Py7L-2024-11-01_19-51-01.198.m3u8",
+            "segment_id": "",
+            "width": 288,
+            "height": 352
+        },
+        {
+            "song": false,
+            "start_seconds": 5.419,
+            "end_seconds": 6.037,
+            "manifest": "ZqueuFbL1FQj-2024-11-01_19-51-01.945.m3u8",
+            "segment_id": "",
+            "width": 352,
+            "height": 288
+        }
+    ],
+    [
+        {
+            "song": false,
+            "start_seconds": 0.618,
+            "end_seconds": 4.053,
+            "manifest": "ewbmlXE8Py7L-2024-11-01_19-51-01.198.m3u8",
+            "segment_id": "",
+            "width": 288,
+            "height": 352
+        },
+        {
+            "song": false,
+            "start_seconds": 0.0,
+            "end_seconds": 3.435,
+            "manifest": "ZqueuFbL1FQj-2024-11-01_19-51-01.945.m3u8",
+            "segment_id": "",
+            "width": 352,
+            "height": 288
+        }
+    ],
+    [
+        {
+            "song": false,
+            "start_seconds": 0.0,
+            "end_seconds": 0.618,
+            "manifest": "ewbmlXE8Py7L-2024-11-01_19-51-01.198.m3u8",
+            "segment_id": "",
+            "width": 288,
+            "height": 352
+        },
+        {
+            "song": false,
+            "start_seconds": 3.435,
+            "end_seconds": 4.053,
+            "manifest": "ZqueuFbL1FQj-2024-11-01_19-51-01.945.m3u8",
+            "segment_id": "",
+            "width": 352,
+            "height": 288
+        }
+    ],
+    [
+        {
+            "song": false,
+            "start_seconds": 0.618,
+            "end_seconds": 2.452,
+            "manifest": "ewbmlXE8Py7L-2024-11-01_19-51-01.198.m3u8",
+            "segment_id": "",
+            "width": 288,
+            "height": 352
+        },
+        {
+            "song": false,
+            "start_seconds": 0.0,
+            "end_seconds": 1.834,
+            "manifest": "ZqueuFbL1FQj-2024-11-01_19-51-01.945.m3u8",
+            "segment_id": "",
+            "width": 352,
+            "height": 288
+        }
+    ],
+    [
+        {
+            "song": false,
+            "start_seconds": 2.452,
+            "end_seconds": 6.037,
             "manifest": "ewbmlXE8Py7L-2024-11-01_19-51-01.198.m3u8",
             "segment_id": "",
             "width": 288,
@@ -225,7 +285,7 @@
         {
             "song": false,
             "start_seconds": 0.0,
-            "end_seconds": 4.199,
+            "end_seconds": 4.032,
             "manifest": "ewbmlXE8Py7L-2024-11-01_19-51-01.198.m3u8",
             "segment_id": "",
             "width": 288,
@@ -236,7 +296,7 @@
         {
             "song": false,
             "start_seconds": 0.0,
-            "end_seconds": 4.33,
+            "end_seconds": 3.47,
             "manifest": "ewbmlXE8Py7L-2024-11-01_19-51-01.198.m3u8",
             "segment_id": "",
             "width": 288,
