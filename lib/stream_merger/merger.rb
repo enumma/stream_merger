@@ -119,7 +119,7 @@ module StreamMerger
 
     def video_filter
       if song
-        "[video_grid][#{total_inputs - 1}:v]overlay=main_w-overlay_w:main_h-overlay_h[video];"
+        "[#{total_inputs - 1}:v]format=rgb24,colorkey=#0211F9:0.1:0.2[overlay];[video_grid][overlay]overlay=main_w-overlay_w:main_h-overlay_h[video];"
       else
         "[video_grid]null[video];"
       end
