@@ -123,7 +123,7 @@ module StreamMerger
         #   [#{total_inputs - 1}:v]format=rgb24,colorkey=#0211F9:0.1:0.2,setpts=PTS-STARTPTS[overlay];
         #   [video_grid][overlay]overlay=517:1639[video];
         # FILTER_COMPLEX
-        ""
+        "[video_grid]null[video];"
       else
         "[video_grid]null[video];"
       end
