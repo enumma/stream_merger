@@ -134,7 +134,7 @@ module StreamMerger
         filter_str << "[#{index}:a]"
       end
       filter_str << "[#{total_inputs - 1}:a]" if song
-      filter_str << "amix=inputs=#{total_inputs}:duration=shortest[audio]"
+      filter_str << "amix=inputs=#{total_inputs}:duration=first:dropout_transition=0,dynaudnorm[audio]"
     end
   end
 end

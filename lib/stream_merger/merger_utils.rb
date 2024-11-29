@@ -15,7 +15,7 @@ module StreamMerger
           -y -filter_complex "#{filter_complex}" \
           -map "[video]" -map "[audio]" -flags +global_header -c:v libx264 \
           -tune zerolatency -preset ultrafast -max_delay 500000 -b:v 8000k -bufsize 16000k -r 30 -g 30 \
-          -c:a aac -b:a 128k -ar 44100 \
+          -c:a aac -b:a 192k -ar 48000 \
           #{output}
       CMD
     end

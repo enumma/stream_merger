@@ -45,7 +45,7 @@ module StreamMerger
             -filter_complex "#{filter_complex}" \
             -map "[outv_final]" -map "[outa]" -flags +global_header -c:v libx264 \
             -tune zerolatency -preset ultrafast \
-            -max_delay 500000 -bufsize 16000k -c:a aac -hls_time 1 -hls_list_size 0 -r 30 -g 30 \
+            -max_delay 500000 -bufsize 16000k -c:a aac -b:a 192k -ar 48000 -hls_time 1 -hls_list_size 0 -r 30 -g 30 \
             -http_persistent 1 -method POST \
             'https://a.upload.youtube.com/http_upload_hls?cid=#{stream_key}&copy=0&file=master.m3u8'
           CMD
@@ -105,7 +105,7 @@ module StreamMerger
         -filter_complex "#{intro_outro_filter_complex}" \
         -map "[outv_final]" -map 0:a \
         -c:v libx264 -crf 23 -preset ultrafast \
-        -c:a aac "#{output.path}"`
+        -c:a aac -b:a 192k -ar 48000 "#{output.path}"`
     end
 
     def intro_outro_filter_complex
@@ -132,7 +132,7 @@ module StreamMerger
 
       cmd = <<-CMD
         ffmpeg -hide_banner -loglevel error -y -safe 0 -i #{@concat_pls} \
-        -preset ultrafast -pix_fmt yuv420p -r 30 -g 30 -c:v libx264 -c:a aac -f hls \
+        -preset ultrafast -pix_fmt yuv420p -r 30 -g 30 -c:v libx264 -c:a aac -b:a 192k -ar 48000 -f hls \
         -hls_time 1 -hls_list_size 0 -hls_flags append_list \
         #{@main_file.path}
       CMD
