@@ -22,9 +22,13 @@ module StreamMerger
     end
 
     def ffmpeg_duration(url)
-      `ffmpeg -i "#{url}" 2>&1 | grep "Duration" | \
-         awk '{print $2}' | sed 's/,//g' | \
-         awk -F: '{ print ($1 * 3600) + ($2 * 60) + $3 }'`.to_f
+      `ffmpeg -i "#{url}" 2>&1 \
+      | grep "DURATION" \
+      | awk -F': ' '{print $2}' \
+      | sed 's/,//g' \
+      | awk -F: '{ print ($1 * 3600) + ($2 * 60) + $3 }' \
+      | sort -n \
+      | head -n 1`.to_f
     end
 
     def ffmpeg_exact_duration(url)

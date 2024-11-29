@@ -70,11 +70,11 @@ module StreamMerger
         next if conference.execute
 
         if no_data_for_too_long?
-          sleep 2 # wait to finish
+          sleep 5 # wait to finish
           next if conference.execute(pop: false) # execute remaining safe
 
           if @hard_stop
-            sleep 2 # wait to finish
+            sleep 5 # wait to finish
             conference.add_black_screen(finish: true)
             conference.wait_to_finish
             break

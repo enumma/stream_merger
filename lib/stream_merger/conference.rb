@@ -110,8 +110,8 @@ module StreamMerger
 
     def build_instruction(playlist, start_time, end_time)
       segment = playlist.segment(start_time, end_time)
-      start_seconds = segment.seconds(start_time).round(4)
-      end_seconds = segment.seconds(end_time).round(4)
+      start_seconds = segment.seconds(start_time).round(8)
+      end_seconds = segment.seconds(end_time).round(8)
 
       return if start_seconds.negative? || (end_seconds - start_seconds) < 0.2 # avoid corrupted files
 

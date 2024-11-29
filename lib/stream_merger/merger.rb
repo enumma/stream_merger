@@ -73,7 +73,7 @@ module StreamMerger
       stream = instruction[:file]
       start_seconds = instruction[:start_seconds]
       end_seconds = instruction[:end_seconds]
-      duration = (end_seconds - start_seconds).round(4)
+      duration = (end_seconds - start_seconds).round(8)
       "-ss '#{start_seconds}' -i \"#{stream}\" -t #{duration}"
     end
 
