@@ -34,13 +34,11 @@ module StreamMerger
 
     GRIDS = [ONE_GRID, TWO_GRID, THREE_GRID, FOUR_GRID].freeze
 
-    attr_reader :participants, :song, :total_inputs
+    attr_reader :participants, :total_inputs
 
     def initialize(instructions)
-      @participants = instructions.reject { |i| i[:song] }
-      @song = instructions.find { |i| i[:song] }
+      @participants = instructions
       @total_inputs = @participants.size
-      @total_inputs += 1 if @song
     end
 
     def inputs
@@ -48,7 +46,6 @@ module StreamMerger
       participants.each do |instruction|
         input_commands << input(instruction)
       end
-      input_commands << input(song) if song
       input_commands.join(" ")
     end
 
@@ -118,14 +115,7 @@ module StreamMerger
     end
 
     def video_filter
-      if song
-        <<-FILTER_COMPLEX
-          [#{total_inputs - 1}:v]format=rgb24,colorkey=#0211F9:0.1:0.2,setpts=PTS-STARTPTS[overlay];
-          [video_grid][overlay]overlay=517:1639[video];
-        FILTER_COMPLEX
-      else
-        "[video_grid]null[video];"
-      end
+      "[video_grid]null[video];"
     end
 
     def audio_filter
@@ -133,7 +123,6 @@ module StreamMerger
       participants.each_with_index do |_instruction, index|
         filter_str << "[#{index}:a]"
       end
-      filter_str << "[#{total_inputs - 1}:a]" if song
       filter_str << "amix=inputs=#{total_inputs}:duration=first:dropout_transition=0,dynaudnorm[audio]"
     end
   end

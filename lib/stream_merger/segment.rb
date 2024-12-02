@@ -5,10 +5,9 @@ module StreamMerger
   class Segment
     include Utils
 
-    attr_reader :song, :segment_id, :file, :start_time, :end_time, :last_modified, :mkv, :duration
+    attr_reader :segment_id, :file, :start_time, :end_time, :last_modified, :mkv, :duration
 
     def initialize(file:, last_modified:)
-      @song = !file.match("song").nil?
       @segment_id = SecureRandom.hex
       @file = file
       @last_modified = last_modified
@@ -32,11 +31,7 @@ module StreamMerger
 
     def set_mkv
       @mkv = Tempfile.new([SecureRandom.hex, ".mkv"])
-      if song
-        `ffmpeg -hide_banner -loglevel error -y -i "#{file}" -r 30 -c:v copy -c:a flac "#{@mkv.path}"`
-      else
-        `ffmpeg -hide_banner -loglevel error -y -i "#{file}" -vf "hflip" -r 30 -c:a flac "#{@mkv.path}"`
-      end
+      `ffmpeg -hide_banner -loglevel error -y -i "#{file}" -vf "hflip" -r 30 -c:a flac "#{@mkv.path}"`
 
       @duration = ffmpeg_duration(@mkv.path)
     end

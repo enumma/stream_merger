@@ -47,5 +47,11 @@ module StreamMerger
 
       configuration.videos_bucket
     end
+
+    def streams_bucket
+      raise Error, "Empty S3 credentials!" if configuration.streams_bucket.nil?
+
+      configuration.streams_bucket
+    end
   end
 end

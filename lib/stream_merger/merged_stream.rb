@@ -6,6 +6,7 @@ module StreamMerger
     include Concat
     include Utils
     include MergerUtils
+    include S3Utils
 
     attr_reader :file_uploader
 
@@ -74,13 +75,7 @@ module StreamMerger
     def ffmpeg_process
       return @ffmpeg_process if @ffmpeg_process
 
-      cmd = <<-CMD
-        ffmpeg -hide_banner -loglevel error -y -safe 0 -i #{@concat_pls} \
-        -preset ultrafast -pix_fmt yuv420p -r 30 -g 30 -c:v libx264 -c:a aac -b:a 192k -ar 48000 -f hls \
-        -hls_time 1 -hls_list_size 0 -hls_flags append_list \
-        -hls_segment_filename "#{@main_m3u8.dirname}/#{@main_m3u8.file_name}_%09d.ts" \
-        '#{@main_m3u8.path}'
-      CMD
+      cmd = (song_m3u8 ? ffmpeg_song_command : ffmpeg_command)
 
       @ffmpeg_process = IO.popen(cmd, "w")
     end
@@ -104,6 +99,37 @@ module StreamMerger
       return unless conference.social?
 
       @social_stream.concat_social(stream_files, finish:)
+    end
+
+    def ffmpeg_command
+      <<-CMD
+        ffmpeg -hide_banner -loglevel error -y -safe 0 -i #{@concat_pls} \
+        -preset ultrafast -pix_fmt yuv420p -r 30 -g 30 -c:v libx264 -c:a aac -b:a 192k -ar 48000 -f hls \
+        -hls_time 1 -hls_list_size 0 -hls_flags append_list \
+        -hls_segment_filename "#{@main_m3u8.dirname}/#{@main_m3u8.file_name}_%09d.ts" \
+        '#{@main_m3u8.path}'
+      CMD
+    end
+
+    def ffmpeg_song_command
+      <<-CMD
+        ffmpeg -hide_banner -loglevel error -y -safe 0 -i #{@concat_pls} -i "#{song_m3u8}" \
+        -filter_complex "[0:v]null[main];
+                         [1:v]format=rgb24,colorkey=#0211F9:0.1:0.2,setpts=PTS-STARTPTS[overlay];
+                         [main][overlay]overlay=517:1639[video];
+                         [0:a][1:a]amix=inputs=2[audio]" \
+        -map "[video]" -map "[audio]" \
+        -preset ultrafast -pix_fmt yuv420p -r 30 -g 30 -c:v libx264 -c:a aac -b:a 192k -ar 48000 -f hls \
+        -hls_time 1 -hls_list_size 0 -hls_flags append_list \
+        -hls_segment_filename "#{@main_m3u8.dirname}/#{@main_m3u8.file_name}_%09d.ts" \
+        '#{@main_m3u8.path}'
+      CMD
+    end
+
+    def song_m3u8
+      @song_m3u8 ||= streams_bucket.objects(prefix: "streams/song#{conference.conference_id}").select do |s|
+        s.key.match?(/\.m3u8/)
+      end.first&.public_url
     end
   end
 end
