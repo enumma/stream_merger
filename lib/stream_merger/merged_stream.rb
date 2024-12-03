@@ -115,7 +115,7 @@ module StreamMerger
 
     def ffmpeg_song_command
       <<-CMD
-        ffmpeg -hide_banner -loglevel error -y -safe 0 -i #{@concat_pls} -i "#{song_m3u8}" \
+        ffmpeg -hide_banner -loglevel error -y -safe 0 -i #{@concat_pls} -live_start_index 0 -i "#{song_m3u8}" \
         -filter_complex "[0:v]null[main];
                          [1:v]format=rgb24,colorkey=#0211F9:0.1:0.2,setpts=PTS-STARTPTS[overlay];
                          [main][overlay]overlay=517:1639[video];
