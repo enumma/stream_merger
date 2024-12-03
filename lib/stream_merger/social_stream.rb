@@ -37,7 +37,7 @@ module StreamMerger
         case type
         when "YoutubeStream"
           cmd = <<-CMD
-            sleep 5
+            sleep 15
             ffmpeg -hide_banner -loglevel error -y \
             -i "#{intro_file}" \
             -live_start_index 0 -re -max_reload 1000000 -m3u8_hold_counters 1000000 -i "#{@main_file.path}" \
