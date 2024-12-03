@@ -75,8 +75,7 @@ module StreamMerger
     def ffmpeg_process
       return @ffmpeg_process if @ffmpeg_process
 
-      # cmd = (song_m3u8 ? ffmpeg_song_command : ffmpeg_command)
-      cmd = ffmpeg_song_command
+      cmd = (song_m3u8 ? ffmpeg_song_command : ffmpeg_command)
 
       @ffmpeg_process = IO.popen(cmd, "w")
     end

@@ -6,12 +6,14 @@ module StreamMerger
     include Concat
     include MergerUtils
     include Utils
+    include S3Utils
 
     COMMON_RESOLUTION = "1080x1920".freeze # Define the common resolution for scaling
     IO_FONTSIZE = 44 # Intro and outro fontsize
     W_FONTSIZE = 32 # Watermark fontsize
 
     def initialize(conference, handle:, stream_keys:)
+      @conference = conference
       @handle = handle
       @stream_keys = stream_keys
       file_name = file_name_with_timestamp("#{conference.conference_id}Social")
@@ -37,7 +39,7 @@ module StreamMerger
         case type
         when "YoutubeStream"
           cmd = <<-CMD
-            sleep 15
+            sleep 5
             ffmpeg -hide_banner -loglevel error -y \
             -i "#{intro_file}" \
             -live_start_index 0 -re -max_reload 1000000 -m3u8_hold_counters 1000000 -i "#{@main_file.path}" \
@@ -79,7 +81,7 @@ module StreamMerger
 
     private
 
-    attr_reader :handle
+    attr_reader :conference, :handle
 
     def watermark_command(input, output)
       `ffmpeg -hide_banner -loglevel error -y \
@@ -130,14 +132,32 @@ module StreamMerger
     def ffmpeg_process
       return @ffmpeg_process if @ffmpeg_process
 
-      cmd = <<-CMD
+      cmd = (song_m3u8 ? ffmpeg_song_command : ffmpeg_command)
+
+      @ffmpeg_process = IO.popen(cmd, "w")
+    end
+
+    def ffmpeg_command
+      <<-CMD
         ffmpeg -hide_banner -loglevel error -y -safe 0 -i #{@concat_pls} \
         -preset ultrafast -pix_fmt yuv420p -r 30 -g 30 -c:v libx264 -c:a aac -b:a 192k -ar 48000 -f hls \
         -hls_time 1 -hls_list_size 0 -hls_flags append_list \
         #{@main_file.path}
       CMD
+    end
 
-      @ffmpeg_process = IO.popen(cmd, "w")
+    def ffmpeg_song_command
+      <<-CMD
+        ffmpeg -hide_banner -loglevel error -y -safe 0 -i #{@concat_pls} -live_start_index 0 -i "#{song_m3u8}" \
+        -filter_complex "[0:v]null[main];
+                         [1:v]format=rgb24,colorkey=#0211F9:0.1:0.2,setpts=PTS-STARTPTS[overlay];
+                         [main][overlay]overlay=517:1639[video];
+                         [0:a][1:a]amix=inputs=2[audio]" \
+        -map "[video]" -map "[audio]" \
+        -preset ultrafast -pix_fmt yuv420p -r 30 -g 30 -c:v libx264 -c:a aac -b:a 192k -ar 48000 -f hls \
+        -hls_time 1 -hls_list_size 0 -hls_flags append_list \
+        #{@main_file.path}
+      CMD
     end
 
     def intro_file
@@ -160,6 +180,12 @@ module StreamMerger
         [overlayed_intro][0:a][main][1:a][overlayed_outro][2:a]concat=n=3:v=1:a=1[outv][outa]; \
         [outv]format=yuv420p[outv_final]
       FILTER
+    end
+
+    def song_m3u8
+      @song_m3u8 ||= streams_bucket.objects(prefix: "streams/song#{conference.conference_id}").select do |s|
+        s.key.match?(/\.m3u8/)
+      end.first&.public_url
     end
   end
 end
