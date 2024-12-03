@@ -127,7 +127,7 @@ module StreamMerger
     end
 
     def song_m3u8
-      @song_m3u8 ||= streams_bucket.objects(prefix: "streams/song#{conference.conference_id}").select do |s|
+      @song_m3u8 ||= videos_bucket.objects(prefix: "streams/song#{conference.conference_id}").select do |s|
         s.key.match?(/\.m3u8/)
       end.first&.public_url
     end
