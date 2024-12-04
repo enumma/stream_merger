@@ -34,6 +34,7 @@ module StreamMerger
       file.close
       file.unlink
       File.mkfifo(path)
+      File.chmod(0o666, path)
     rescue StandardError => e
       warn "Failed to create FIFO: #{e.message}"
     end

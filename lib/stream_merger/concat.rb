@@ -10,11 +10,16 @@ module StreamMerger
       write_concat_file(stream_files, finish:)
     end
 
-    def write_concat_file(stream_files, finish:)
+    def write_concat_file(stream_files, finish: false)
       concat_content = build_concat_content(stream_files, finish:)
-      File.open(@concat_pls, "w") do |fifo|
-        fifo.puts concat_content
+      pid = fork do
+        recreate_concat_pls
+        file = File.open(@concat_pls, "w")
+        file.write(concat_content)
       end
+      Process.wait(pid)
+
+      File.delete(@concat_pls) if finish && File.exist?(@concat_pls)
     end
 
     def build_concat_content(stream_files, finish:)
@@ -22,6 +27,12 @@ module StreamMerger
       file_entries = stream_files.map { |file| "file '#{file.path}'\n" }.join
       self_reference = (finish ? "" : "file '#{@concat_pls}'\noption safe 0")
       "#{concat_header}#{file_entries}#{self_reference}\n"
+    end
+
+    def recreate_concat_pls
+      File.delete(@concat_pls) if File.exist?(@concat_pls)
+      File.mkfifo(@concat_pls)
+      File.chmod(0o666, @concat_pls)
     end
   end
 end

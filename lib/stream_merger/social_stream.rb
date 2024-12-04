@@ -148,15 +148,16 @@ module StreamMerger
 
     def ffmpeg_song_command
       <<-CMD
-        ffmpeg -hide_banner -loglevel error -y -safe 0 -i #{@concat_pls} -live_start_index 0 -i "#{song_m3u8}" \
+        ffmpeg -hide_banner -loglevel error -y -safe 0 -re -i #{@concat_pls} \
+        -live_start_index 0 -re -max_reload 1000000 -m3u8_hold_counters 1000000 -i "#{song_m3u8}" \
         -filter_complex "[0:v]null[main];
-                         [1:v]format=rgb24,colorkey=#0211F9:0.1:0.2,setpts=PTS-STARTPTS[overlay];
+                         [1:v]format=rgb24,colorkey=#0211F9:0.1:0.2[overlay];
                          [main][overlay]overlay=517:1639[video];
-                         [0:a][1:a]amix=inputs=2[audio]" \
+                         [0:a][1:a]amix=inputs=2:duration=shortest[audio]" \
         -map "[video]" -map "[audio]" \
         -preset ultrafast -pix_fmt yuv420p -r 30 -g 30 -c:v libx264 -c:a aac -b:a 192k -ar 48000 -f hls \
         -hls_time 1 -hls_list_size 0 -hls_flags append_list \
-        #{@main_file.path}
+        '#{@main_file.path}'
       CMD
     end
 

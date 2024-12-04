@@ -1,1 +1,1 @@
-ffmpeg -t 2 -f lavfi -i color=c=black:s=1080x1920:r=30 -f lavfi -t 2 -i anullsrc=r=44100:cl=stereo -c:v libx264 -pix_fmt yuv420p -c:a aac -y 1080x1920.mkv
+ffmpeg -t 0.2 -f lavfi -i color=c=black:s=1080x1920:r=30 -f lavfi -t 0.2 -i anullsrc=r=44100:cl=stereo -c:v libx264 -pix_fmt yuv420p -c:a aac -y 1080x1920.mkv
