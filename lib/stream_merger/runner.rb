@@ -24,7 +24,7 @@ module StreamMerger
 
       @running = true
       @thread = Thread.new { run } # Run in a background thread
-      @upload_thread = Thread.new { upload_files } # Run in a background thread
+      # @upload_thread = Thread.new { upload_files } # Run in a background thread
     end
 
     def stop
@@ -33,7 +33,7 @@ module StreamMerger
         @condition.signal # Wake up any waiting thread
       end
       @thread&.join # Ensure the background thread completes
-      @upload_thread&.join # Ensure thread completes
+      # @upload_thread&.join # Ensure thread completes
     end
 
     def add_stream(stream_id)
