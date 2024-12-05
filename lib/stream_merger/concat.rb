@@ -11,18 +11,17 @@ module StreamMerger
     end
 
     def write_concat_file(stream_files, finish: false)
+      if File.exist?(@concat_pls) && finish
+        File.delete(@concat_pls)
+        return
+      end
       concat_content = build_concat_content(stream_files, finish:)
       pid = fork do
         recreate_concat_pls
         file = File.open(@concat_pls, "w")
         file.write(concat_content)
       end
-      if finish
-        kill_process(@ffmpeg_process)
-        File.delete(@concat_pls) if File.exist?(@concat_pls)
-      else
-        Process.wait(pid)
-      end
+      Process.wait(pid)
     end
 
     def build_concat_content(stream_files, finish:)
