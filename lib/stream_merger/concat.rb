@@ -17,9 +17,12 @@ module StreamMerger
         file = File.open(@concat_pls, "w")
         file.write(concat_content)
       end
-      Process.wait(pid)
-
-      File.delete(@concat_pls) if finish && File.exist?(@concat_pls)
+      if finish
+        kill_process(@ffmpeg_process)
+        File.delete(@concat_pls) if File.exist?(@concat_pls)
+      else
+        Process.wait(pid)
+      end
     end
 
     def build_concat_content(stream_files, finish:)

@@ -112,7 +112,7 @@ module StreamMerger
       start_seconds = segment.seconds(start_time).round(8)
       end_seconds = segment.seconds(end_time).round(8)
 
-      return if start_seconds.negative? || (end_seconds - start_seconds) < 0.2 # avoid corrupted files
+      return if start_seconds.negative? || (end_seconds - start_seconds) < 0.35 # avoid corrupted files
 
       { start_seconds:, end_seconds:,
         manifest: manifest(segment.file),

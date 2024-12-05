@@ -140,21 +140,25 @@ module StreamMerger
 
     def ffmpeg_command
       <<-CMD
-        ffmpeg -hide_banner -loglevel error -y -safe 0 -i #{@concat_pls} \
+        ffmpeg -hide_banner -loglevel debug -y -safe 0 -re -i #{@concat_pls} \
         -preset ultrafast -pix_fmt yuv420p -r 30 -g 30 -c:v libx264 -c:a aac -b:a 192k -ar 48000 -f hls \
         -hls_time 1 -hls_list_size 0 -hls_flags append_list \
+        -vf setpts=PTS-STARTPTS \
+        -af asetpts=PTS-STARTPTS \
         #{@main_file.path}
       CMD
     end
 
     def ffmpeg_song_command
       <<-CMD
-        ffmpeg -hide_banner -loglevel error -y -safe 0 -re -i #{@concat_pls} \
+        ffmpeg -threads 0 -hide_banner -loglevel verbose -y -safe 0 -re -i #{@concat_pls} \
         -live_start_index 0 -re -max_reload 1000000 -m3u8_hold_counters 1000000 -i "#{song_m3u8}" \
-        -filter_complex "[0:v]null[main];
-                         [1:v]format=rgb24,colorkey=#0211F9:0.1:0.2[overlay];
+        -filter_complex "[0:v]setpts=PTS-STARTPTS[main];
+                         [1:v]format=yuv420p,colorkey=#0211F9:0.1:0.2[overlay];
                          [main][overlay]overlay=517:1639[video];
-                         [0:a][1:a]amix=inputs=2:duration=shortest[audio]" \
+                         [0:a]asetpts=PTS-STARTPTS[main_audio];
+                         [1:a]asetpts=PTS-STARTPTS[song];
+                         [main_audio][song]amix=inputs=2:duration=longest:dropout_transition=3[audio]" \
         -map "[video]" -map "[audio]" \
         -preset ultrafast -pix_fmt yuv420p -r 30 -g 30 -c:v libx264 -c:a aac -b:a 192k -ar 48000 -f hls \
         -hls_time 1 -hls_list_size 0 -hls_flags append_list \

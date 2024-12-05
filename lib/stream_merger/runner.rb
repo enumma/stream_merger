@@ -24,7 +24,7 @@ module StreamMerger
 
       @running = true
       @thread = Thread.new { run } # Run in a background thread
-      # @upload_thread = Thread.new { upload_files } # Run in a background thread
+      @upload_thread = Thread.new { upload_files } # Run in a background thread
     end
 
     def stop
@@ -33,7 +33,7 @@ module StreamMerger
         @condition.signal # Wake up any waiting thread
       end
       @thread&.join # Ensure the background thread completes
-      # @upload_thread&.join # Ensure thread completes
+      @upload_thread&.join # Ensure thread completes
     end
 
     def add_stream(stream_id)
@@ -106,7 +106,10 @@ module StreamMerger
       end
 
       files = file_loader.files(@stream_ids) if @stream_ids.any?
-      conference.update(files) if files # Slow process
+      # Slow process
+      files&.each_slice(20) do |batch|
+        conference.update(batch)
+      end
 
       # Stop processing
       @mutex.synchronize do
