@@ -31,7 +31,7 @@ module StreamMerger
 
     def set_mkv
       @mkv = Tempfile.new([SecureRandom.hex, ".mkv"])
-      `ffmpeg -hide_banner -loglevel error -y -i "#{file}" -vf "hflip" -r 30 -c:a flac "#{@mkv.path}"`
+      `ffmpeg -hide_banner -loglevel error -y -i "#{file}" -vf "hflip" -r 30 -c:a aac "#{@mkv.path}"`
 
       @duration = ffmpeg_duration(@mkv.path)
     end

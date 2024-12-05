@@ -17,7 +17,8 @@ module StreamMerger
       @main_m3u8 = StreamFile.new(file_name:, extension: ".m3u8")
       @concat_pls = StreamFile.new(file_name: "merged-concat#{SecureRandom.hex}", extension: ".txt", type: "fifo").path
       @file_uploader = FileUploader.new(main_m3u8: @main_m3u8)
-      @social_stream = SocialStream.new(conference, handle: conference.handle, stream_keys: conference.stream_keys, main_m3u8: @main_m3u8)
+      @social_stream = SocialStream.new(conference, handle: conference.handle, stream_keys: conference.stream_keys,
+                                                    main_m3u8: @main_m3u8)
     end
 
     def execute(instructions)
@@ -104,7 +105,7 @@ module StreamMerger
 
     def ffmpeg_command
       <<-CMD
-        ffmpeg -hide_banner -loglevel error -y -safe 0 -re -i #{@concat_pls} \
+        ffmpeg -hide_banner -loglevel verbose -y -safe 0 -re -i #{@concat_pls} \
         -preset ultrafast -pix_fmt yuv420p -r 30 -g 30 -c:v libx264 -c:a aac -b:a 192k -ar 48000 -f hls \
         -hls_time 1 -hls_list_size 0 -hls_flags append_list \
         -vf setpts=PTS-STARTPTS \
@@ -116,7 +117,7 @@ module StreamMerger
 
     def ffmpeg_song_command
       <<-CMD
-        ffmpeg -threads 0 -hide_banner -loglevel error -y -safe 0 -re -i #{@concat_pls} \
+        ffmpeg -threads 0 -hide_banner -loglevel verbose -y -safe 0 -re -i #{@concat_pls} \
         -live_start_index 0 -re -max_reload 1000000 -m3u8_hold_counters 1000000 -i "#{song_m3u8}" \
         -filter_complex "[0:v]setpts=PTS-STARTPTS[main];
                          [1:v]format=yuv420p,colorkey=#0211F9:0.1:0.2[overlay];
