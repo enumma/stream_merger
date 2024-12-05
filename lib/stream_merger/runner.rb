@@ -6,7 +6,7 @@ module StreamMerger
     attr_accessor :hard_stop
     attr_reader :status, :exception
 
-    TIME_LIMIT = 300
+    TIME_LIMIT = 120
 
     def initialize(conference_id: SecureRandom.hex, stream_ids: [], handle: nil, stream_keys: [])
       @mutex = Mutex.new                 # Mutex to safely modify stream_ids
@@ -124,7 +124,7 @@ module StreamMerger
       hard_stop
     end
 
-    def no_data_for_too_long?
+    def no_data_for_too_long? # rubocop:disable Metrics/AbcSize
       # No new data
       return (Time.now.to_f - @conference.control_time.to_f) >= 5 if @conference.control_time
       return (Time.now.to_f - @control_time.to_f) >= 50 if @conference.segments.any?

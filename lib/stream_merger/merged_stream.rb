@@ -2,7 +2,7 @@
 
 module StreamMerger
   # MergedStream
-  class MergedStream
+  class MergedStream # rubocop:disable Metrics/ClassLength
     include Concat
     include Utils
     include MergerUtils

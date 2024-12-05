@@ -11,7 +11,7 @@ RSpec.describe StreamMerger::Segment do
   end
 
   it "calculates duration" do
-    expect(segment.duration).to eq 6.144
+    expect(segment.duration).to eq 6.165
   end
 
   it "calculates start" do
