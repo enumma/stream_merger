@@ -53,15 +53,15 @@ module StreamMerger
     attr_reader :conference, :handle
 
     def watermark_font_file
-      "./lib/social_stream/Lato-Regular.ttf"
+      File.expand_path("./lib/social_stream/Lato-Regular.ttf")
     end
 
     def watermark_file
-      "./lib/social_stream/watermark.png"
+      File.expand_path("./lib/social_stream/watermark.png")
     end
 
     def intro_outro_font_file
-      "./lib/social_stream/Ubuntu-Medium.ttf"
+      File.expand_path("./lib/social_stream/Ubuntu-Medium.ttf")
     end
 
     def ffmpeg_process
