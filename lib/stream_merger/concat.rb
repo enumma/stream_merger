@@ -11,6 +11,8 @@ module StreamMerger
     end
 
     def write_concat_file(stream_files, finish: false)
+      return unless running? # avoid blocking again
+
       concat_content = build_concat_content(stream_files, finish:)
       pid = fork do
         file = File.open(@concat_pls, "w")
@@ -35,6 +37,17 @@ module StreamMerger
       File.delete(@concat_pls) if File.exist?(@concat_pls)
       File.mkfifo(@concat_pls)
       File.chmod(0o666, @concat_pls)
+    end
+
+    def running?
+      return false unless @ffmpeg_process&.pid
+
+      begin
+        Process.getpgid(@ffmpeg_process&.pid)
+        true
+      rescue Errno::ESRCH
+        false
+      end
     end
   end
 end
