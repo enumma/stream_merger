@@ -11,6 +11,7 @@ StreamMerger.configure do |config|
     secret_access_key: ENV.fetch("AWS_SECRET_ACCESS_KEY")
   }
   config.videos_bucket = ENV.fetch("S3_VIDEOS_BUCKET")
+  config.streams_bucket = ENV.fetch("S3_STREAMS_BUCKET")
 end
 
 runner = StreamMerger::Runner.new(handle: "@mauricio", stream_keys: [%w[YoutubeStream 6mbf-ve2b-kds3-6s5u-1qc3]])

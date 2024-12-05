@@ -11,6 +11,10 @@ module StreamMerger
       @videos_bucket ||= s3_resource.bucket(StreamMerger.videos_bucket)
     end
 
+    def streams_bucket
+      @streams_bucket ||= s3_resource.bucket(StreamMerger.streams_bucket)
+    end
+
     def s3_upload(path:, base_name:, force:)
       key = "streams/#{base_name}"
       s3_object = videos_bucket.object(key)

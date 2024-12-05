@@ -5,7 +5,7 @@ RSpec.describe StreamMerger::Utils do
   let(:file) { file_path("ewbmlXE8Py7L-2024-11-01_19-51-01.198000000000.ts") }
 
   it "calculates duration" do
-    expect(dummy_class.ffmpeg_duration(file)).to eq 6.33
+    expect(dummy_class.ffmpeg_exact_duration(file)).to eq 6.333011
   end
 
   it "calculates exact duration" do

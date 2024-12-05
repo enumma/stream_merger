@@ -6,7 +6,7 @@ module StreamMerger
     attr_accessor :hard_stop
     attr_reader :status, :exception
 
-    TIME_LIMIT = 300
+    TIME_LIMIT = 120
 
     def initialize(conference_id: SecureRandom.hex, stream_ids: [], handle: nil, stream_keys: [])
       @mutex = Mutex.new                 # Mutex to safely modify stream_ids
@@ -70,11 +70,9 @@ module StreamMerger
         next if conference.execute
 
         if no_data_for_too_long?
-          sleep 5 # wait to finish
           next if conference.execute(pop: false) # execute remaining safe
 
           if @hard_stop
-            sleep 5 # wait to finish
             conference.add_black_screen(finish: true)
             conference.wait_to_finish
             break
@@ -108,7 +106,10 @@ module StreamMerger
       end
 
       files = file_loader.files(@stream_ids) if @stream_ids.any?
-      conference.update(files) if files # Slow process
+      # Slow process
+      files&.each_slice(20) do |batch|
+        conference.update(batch)
+      end
 
       # Stop processing
       @mutex.synchronize do
@@ -123,13 +124,13 @@ module StreamMerger
       hard_stop
     end
 
-    def no_data_for_too_long?
+    def no_data_for_too_long? # rubocop:disable Metrics/AbcSize
       # No new data
-      return (Time.now - @conference.control_time) >= 5 if @conference.control_time
-      return (Time.now - @control_time) >= 50 if @conference.segments.any?
+      return (Time.now.to_f - @conference.control_time.to_f) >= 5 if @conference.control_time
+      return (Time.now.to_f - @control_time.to_f) >= 50 if @conference.segments.any?
 
       # Waiting for data to arrive
-      return false unless (Time.now - @control_time) >= TIME_LIMIT
+      return false unless (Time.now.to_f - @control_time.to_f) >= TIME_LIMIT
 
       # Data never arrived
       raise Error, "Data never arrived"
