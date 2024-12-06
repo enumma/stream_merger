@@ -9,6 +9,7 @@ module StreamMerger
       @file_name = file_name
       @type = type
       @file = Tempfile.new([file_name, extension])
+      @file.close
       @path = @file.path
       create_fifo if fifo?
       create_normal if normal?

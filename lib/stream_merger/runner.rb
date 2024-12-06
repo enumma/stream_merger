@@ -107,7 +107,7 @@ module StreamMerger
 
       files = file_loader.files(@stream_ids) if @stream_ids.any?
       # Slow process
-      files&.each_slice(20) do |batch|
+      files&.each_slice(10) do |batch|
         conference.update(batch)
       end
 

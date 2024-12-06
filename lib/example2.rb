@@ -16,11 +16,8 @@ end
 
 # runner = StreamMerger::Runner.new(stream_ids: %w[ewbmlXE8Py7L ZqueuFbL1FQj], handle: "@mauricio",
 #                                   stream_keys: [%w[YoutubeStream 6mbf-ve2b-kds3-6s5u-1qc3]])
-runner = StreamMerger::Runner.new(conference_id: "conference_room_4071daf4-6a8a-4d74-a78b-de4ebdef879a",
-                                  handle: "@mauricio1",
-                                  stream_ids: %w[participant_03fff6db-4be9-4334-b368-63ebfb964e7f
-                                                 participant_b0fe403f-112c-45a2-9b3f-6cf1939ea7f4],
-                                  stream_keys: [%w[YoutubeStream 6mbf-ve2b-kds3-6s5u-1qc3]])
+runner = StreamMerger::Runner.new(conference_id: "conference_room_d7ed3d15-d3f1-42e3-8d3f-81c9a502e884",
+                                  handle: "@mauricio", stream_ids: %w[participant_ae7a48f5-6f83-4993-b416-e3cced7374e8])
 # runner = StreamMerger::Runner.new(stream_ids: %w[E3ivaecEHlJr ZOm21G0irMQh diTBkWXcZ5xJ veAAQNHlk7EV])
 runner.start
 loop do

@@ -105,6 +105,7 @@ module StreamMerger
 
     def ffmpeg_command
       <<-CMD
+        sleep 3
         ffmpeg -hide_banner -loglevel error -y -safe 0 -re -i #{@concat_pls} \
         -preset ultrafast -pix_fmt yuv420p -r 30 -g 30 -c:v libx264 -c:a aac -b:a 192k -ar 48000 -f hls \
         -hls_time 1 -hls_list_size 0 -hls_flags append_list \
@@ -117,6 +118,7 @@ module StreamMerger
 
     def ffmpeg_song_command
       <<-CMD
+        sleep 3
         ffmpeg -hide_banner -loglevel info -y -safe 0 -re -i #{@concat_pls} \
         -live_start_index 0 -re -max_reload 1000000 -m3u8_hold_counters 1000000 -i "#{song_m3u8}" \
         -filter_complex "[0:v]setpts=PTS-STARTPTS[main];
