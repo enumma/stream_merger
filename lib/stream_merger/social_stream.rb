@@ -92,7 +92,7 @@ module StreamMerger
 
     def base_social_command
       <<-CMD
-        sleep 30
+        sleep 5
         ffmpeg -hide_banner -loglevel verbose -y \
         -i "#{intro_file}" \
         -live_start_index 0 -re -max_reload 1000000 -m3u8_hold_counters 1000000 -i "#{@main_m3u8.path}" \
@@ -103,7 +103,7 @@ module StreamMerger
         -tune zerolatency -preset ultrafast \
         -max_delay 500000 -bufsize 16000k \
         -c:a aac -b:a 192k -ar 48000 \
-        -hls_time 1 -hls_list_size 0 -r 30 -g 30
+        -hls_time 2 -hls_list_size 0 -r 30 -g 30
       CMD
     end
 

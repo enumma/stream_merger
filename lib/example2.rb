@@ -14,11 +14,11 @@ StreamMerger.configure do |config|
   config.streams_bucket = ENV.fetch("S3_STREAMS_BUCKET")
 end
 
-# runner = StreamMerger::Runner.new(stream_ids: %w[ewbmlXE8Py7L ZqueuFbL1FQj], handle: "@mauricio",
-#                                   stream_keys: [%w[YoutubeStream 6mbf-ve2b-kds3-6s5u-1qc3]])
-runner = StreamMerger::Runner.new(conference_id: "conference_room_d7ed3d15-d3f1-42e3-8d3f-81c9a502e884",
-                                  handle: "@mauricio", stream_ids: %w[participant_ae7a48f5-6f83-4993-b416-e3cced7374e8])
-# runner = StreamMerger::Runner.new(stream_ids: %w[E3ivaecEHlJr ZOm21G0irMQh diTBkWXcZ5xJ veAAQNHlk7EV])
+runner = StreamMerger::Runner.new(handle: "@mauricio",
+                                  conference_id: "conference_room_6f78a218-b9ed-4330-95a8-8fa262608bf4",
+                                  stream_keys: [%w[YoutubeStream 6mbf-ve2b-kds3-6s5u-1qc3]],
+                                  stream_ids: %w[participant_58ef07b0-8589-4b89-ad9c-462622b3e376
+                                                 participant_06ffe308-f563-49ae-855f-4dd8bbb30b53])
 runner.start
 loop do
   break unless runner.running?
