@@ -63,14 +63,6 @@ module StreamMerger
       File.expand_path("./lib/social_stream/Ubuntu-Medium.ttf")
     end
 
-    def ffmpeg_process
-      return @ffmpeg_process if @ffmpeg_process
-
-      cmd = (song_m3u8 ? ffmpeg_song_command : ffmpeg_command)
-
-      @ffmpeg_process = IO.popen(cmd, "w")
-    end
-
     def intro_file
       input = File.open("./lib/social_stream/intro.mkv")
       input.path
@@ -91,7 +83,7 @@ module StreamMerger
 
     def base_social_command
       <<-CMD
-        sleep 15
+        sleep 5
         ffmpeg -hide_banner -loglevel verbose -y \
         -i "#{intro_file}" \
         -live_start_index 0 -re -max_reload 1000000 -m3u8_hold_counters 1000000 -i "#{main_m3u8}" \
@@ -128,11 +120,12 @@ module StreamMerger
         @main_m3u8 = videos_bucket.objects(prefix: "streams/#{conference.conference_id}").select do |s|
           s.key.match?(/\.m3u8/)
         end.first&.public_url
-        break if @main_m3u8 || i >= 30
+        break if @main_m3u8 || i >= 120
 
         i += 1
         sleep 1
       end
+      puts "@main_m3u8 #{@main_m3u8}"
       @main_m3u8
     end
   end
