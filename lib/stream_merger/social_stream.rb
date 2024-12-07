@@ -83,7 +83,7 @@ module StreamMerger
 
     def base_social_command
       <<-CMD
-        sleep 5
+        sleep 10
         ffmpeg -hide_banner -loglevel verbose -y \
         -i "#{intro_file}" \
         -live_start_index 0 -re -max_reload 1000000 -m3u8_hold_counters 1000000 -i "#{main_m3u8}" \
@@ -120,7 +120,7 @@ module StreamMerger
         @main_m3u8 = videos_bucket.objects(prefix: "streams/#{conference.conference_id}").select do |s|
           s.key.match?(/\.m3u8/)
         end.first&.public_url
-        break if @main_m3u8 || i >= 120
+        break if @main_m3u8 || i >= 600
 
         i += 1
         sleep 1

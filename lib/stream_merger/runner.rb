@@ -6,7 +6,7 @@ module StreamMerger
     attr_accessor :hard_stop
     attr_reader :status, :exception
 
-    TIME_LIMIT = 120
+    TIME_LIMIT = 600
 
     def initialize(conference_id: SecureRandom.hex, stream_ids: [], handle: nil, stream_keys: [])
       @mutex = Mutex.new                 # Mutex to safely modify stream_ids
