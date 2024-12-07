@@ -17,8 +17,7 @@ module StreamMerger
       @main_m3u8 = StreamFile.new(file_name:, extension: ".m3u8")
       @concat_pls = StreamFile.new(file_name: "merged-concat#{SecureRandom.hex}", extension: ".txt", type: "fifo").path
       @file_uploader = FileUploader.new(main_m3u8: @main_m3u8)
-      @social_stream = SocialStream.new(conference, handle: conference.handle, stream_keys: conference.stream_keys,
-                                                    main_m3u8: @main_m3u8)
+      @social_stream = SocialStream.new(conference, handle: conference.handle, stream_keys: conference.stream_keys)
     end
 
     def execute(instructions)

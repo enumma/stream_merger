@@ -12,11 +12,10 @@ module StreamMerger
     IO_FONTSIZE = 44 # Intro and outro fontsize
     W_FONTSIZE = 32 # Watermark fontsize
 
-    def initialize(conference, handle:, stream_keys:, main_m3u8:)
+    def initialize(conference, handle:, stream_keys:)
       @conference = conference
       @handle = handle
       @stream_keys = stream_keys
-      @main_m3u8 = main_m3u8
     end
 
     def start_social_processes
@@ -92,10 +91,10 @@ module StreamMerger
 
     def base_social_command
       <<-CMD
-        sleep 5
+        sleep 15
         ffmpeg -hide_banner -loglevel verbose -y \
         -i "#{intro_file}" \
-        -live_start_index 0 -re -max_reload 1000000 -m3u8_hold_counters 1000000 -i "#{@main_m3u8.path}" \
+        -live_start_index 0 -re -max_reload 1000000 -m3u8_hold_counters 1000000 -i "#{main_m3u8}" \
         -i "#{outro_file}" \
         -i "#{watermark_file}" \
         -filter_complex "#{filter_complex}" \
@@ -119,6 +118,22 @@ module StreamMerger
         [overlayed_intro][0:a][overlayed_main][1:a][overlayed_outro][2:a]concat=n=3:v=1:a=1[outv][outa]; \
         [outv]format=yuv420p[outv_final]
       FILTER
+    end
+
+    def main_m3u8 # rubocop:disable Metrics/MethodLength
+      return @main_m3u8 if @main_m3u8
+
+      i = 0
+      loop do
+        @main_m3u8 = videos_bucket.objects(prefix: "streams/#{conference.conference_id}").select do |s|
+          s.key.match?(/\.m3u8/)
+        end.first&.public_url
+        break if @main_m3u8 || i >= 30
+
+        i += 1
+        sleep 1
+      end
+      @main_m3u8
     end
   end
 end
