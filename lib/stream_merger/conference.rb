@@ -68,6 +68,7 @@ module StreamMerger
 
     def purge!
       @merged_stream.purge!
+      playlists.map(&:purge)
     end
 
     def segments

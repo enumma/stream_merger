@@ -27,12 +27,16 @@ module StreamMerger
       file_timestamp(file)
     end
 
+    def purge
+      File.delete(@mkv.path) if File.exist?(@mkv.path)
+    end
+
     private
 
     def set_mkv
-      @mkv = Tempfile.new([SecureRandom.hex, ".mkv"])
+      @mkv = StreamFile.new(file_name: SecureRandom.hex, extension: ".mkv", type: "normal")
+
       `ffmpeg -hide_banner -loglevel error -y -i "#{file}" -vf "hflip" -r 30 -c:a aac "#{@mkv.path}"`
-      @mkv.close
       @duration = ffmpeg_duration(@mkv.path)
     end
   end

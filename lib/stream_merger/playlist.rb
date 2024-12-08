@@ -40,6 +40,10 @@ module StreamMerger
       end
     end
 
+    def purge
+      segments.each(&:purge)
+    end
+
     private
 
     attr_reader :tmp

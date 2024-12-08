@@ -123,7 +123,8 @@ module StreamMerger
       participants.each_with_index do |_instruction, index|
         filter_str << "[#{index}:a]"
       end
-      filter_str << "amix=inputs=#{total_inputs}:duration=first:dropout_transition=0,dynaudnorm[audio]"
+      # filter_str << "amix=inputs=#{total_inputs}:duration=first:dropout_transition=0,dynaudnorm[audio]"
+      filter_str << "amix=inputs=#{total_inputs}:duration=first,volume=#{total_inputs}[audio]"
     end
   end
 end
