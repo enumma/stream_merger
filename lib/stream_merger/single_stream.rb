@@ -56,10 +56,12 @@ module StreamMerger
     end
 
     def load_out_m3u8
+      i = 0
       loop do
-        break if File.size(out_m3u8.path).positive?
+        break if File.size(out_m3u8.path).positive? || i >= 60
 
         puts "#{out_m3u8.path} does not exist yet!"
+        i += 1
         sleep 10
       end
     end
