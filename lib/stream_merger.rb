@@ -20,6 +20,7 @@ require_relative "stream_merger/playlist"
 require_relative "stream_merger/segment"
 require_relative "stream_merger/merged_stream"
 require_relative "stream_merger/social_stream"
+require_relative "stream_merger/single_stream"
 require_relative "stream_merger/runner"
 require_relative "stream_merger/version"
 
