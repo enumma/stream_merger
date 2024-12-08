@@ -45,6 +45,10 @@ module StreamMerger
       true
     end
 
+    def purge!
+      @file_uploader.delete_files
+    end
+
     private
 
     attr_reader :conference_id, :handle, :out_m3u8, :stream_keys, :stream_id

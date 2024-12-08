@@ -26,3 +26,4 @@ end
 single_stream.wait_to_finish
 single_stream.upload_files
 single_stream.kill_processes
+single_stream.purge!
