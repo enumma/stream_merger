@@ -146,7 +146,7 @@ module StreamMerger
       <<~FILTER
         [0:v]scale=#{COMMON_RESOLUTION}[intro];
         [intro]drawtext=fontfile=#{intro_outro_font_file}:text='#{handle}':fontsize=#{IO_FONTSIZE}:fontcolor=#1E1E1E:x=(w-text_w)/2:y=(h-text_h)/2+223:alpha='if(gte(t,1.3),min(1,(t-1.3)/1.3),0)'[overlayed_intro];
-        [1:v]scale=#{COMMON_RESOLUTION}[main];
+        [1:v]null[main];
         [main][3:v]overlay=(main_w - overlay_w - 24):(main_h - overlay_h - 376)[main_with_image];
         [main_with_image]drawtext=fontfile=#{watermark_font_file}:text='#{handle}':fontsize=#{W_FONTSIZE}:fontcolor=#FFFFFF:x=w - text_w - 24:y=h - text_h - 318[overlayed_main];
         [2:v]scale=#{COMMON_RESOLUTION}[outro];
