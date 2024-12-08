@@ -156,10 +156,20 @@ module StreamMerger
       FILTER
     end
 
-    def song_m3u8
-      @song_m3u8 ||= streams_bucket.objects(prefix: "streams/song#{conference_id}").select do |s|
-        s.key.match?(/\.m3u8/)
-      end.first&.public_url
+    def song_m3u8 # rubocop:disable Metrics/MethodLength
+      return @song_m3u8 if @song_m3u8
+
+      i = 0
+      loop do
+        @song_m3u8 = streams_bucket.objects(prefix: "streams/song#{conference_id}").select do |s|
+          s.key.match?(/\.m3u8/)
+        end.first&.public_url
+        break if @song_m3u8 || i >= 600
+
+        i += 1
+        sleep 1
+      end
+      @song_m3u8
     end
 
     def participant_m3u8 # rubocop:disable Metrics/MethodLength
