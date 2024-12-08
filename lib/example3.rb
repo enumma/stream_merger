@@ -14,10 +14,10 @@ StreamMerger.configure do |config|
   config.streams_bucket = ENV.fetch("S3_STREAMS_BUCKET")
 end
 
-single_stream = StreamMerger::SingleStream.new(handle: "@mauricio",
-                                               conference_id: "conference_room_b7ef406a-83e3-4a6f-a40d-5d852f40bea3",
-                                               stream_id: "participant_8d9c80fc-0b93-42e1-a1bd-ff41ff6ea26f",
-                                               stream_keys: [%w[YoutubeStream 6mbf-ve2b-kds3-6s5u-1qc3]])
+single_stream = StreamMerger::SingleStream.new(handle: "@andreszablah",
+                                               conference_id: "conference_room_c6daa37a-3178-4b6f-87de-f2ce70266f9f",
+                                               stream_id: "participant_09c8daca-03de-4179-96b8-5a1f0a340037",
+                                               stream_keys: [])
 single_stream.start
 thread = Thread.new do
   loop do

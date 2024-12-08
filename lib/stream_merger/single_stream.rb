@@ -26,9 +26,9 @@ module StreamMerger
 
     def start
       ffmpeg_process
+      load_out_m3u8
       return unless stream_keys.any?
 
-      load_out_m3u8
       start_social_processes
     end
 
