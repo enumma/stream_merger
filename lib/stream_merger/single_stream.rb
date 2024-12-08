@@ -9,6 +9,10 @@ module StreamMerger
     COMMON_RESOLUTION = "1080x1920" # Define the common resolution for scaling
     IO_FONTSIZE = 44 # Intro and outro fontsize
     W_FONTSIZE = 32 # Watermark fontsize
+    OUTPUT_W = 1080.0
+    OUTPUT_H = 1920.0
+    ONE_GRID = "[0:v]CROP_I,scale=#{OUTPUT_W}:#{OUTPUT_H},hflip,setpts=PTS-STARTPTS[main];".freeze
+    OUTPUT_RESOLUTION = { w: OUTPUT_W, h: OUTPUT_H, o: :vertical }.freeze
 
     def initialize(conference_id:, stream_id:, handle:, stream_keys:)
       file_name = file_name_with_timestamp("#{conference_id}Merged")
@@ -49,6 +53,17 @@ module StreamMerger
       @file_uploader.delete_files
     end
 
+    def running?
+      return false unless @ffmpeg_process&.pid
+
+      begin
+        Process.getpgid(@ffmpeg_process&.pid)
+        true
+      rescue Errno::ESRCH
+        false
+      end
+    end
+
     private
 
     attr_reader :conference_id, :handle, :out_m3u8, :stream_keys, :stream_id
@@ -87,7 +102,7 @@ module StreamMerger
         ffmpeg -hide_banner -loglevel info -y \
         -live_start_index 0 -max_reload 1000000 -m3u8_hold_counters 1000000 -i "#{participant_m3u8}" \
         -live_start_index 0 -max_reload 1000000 -m3u8_hold_counters 1000000 -i "#{song_m3u8}" \
-        -filter_complex "[0:v]hflip,setpts=PTS-STARTPTS[main];
+        -filter_complex "#{cropped_video}
                          [1:v]format=yuv420p,colorkey=#0211F9:0.1:0.2[overlay];
                          [main][overlay]overlay=517:1639:eof_action=repeat[video];
                          [0:a]asetpts=PTS-STARTPTS[main_audio];
@@ -125,6 +140,7 @@ module StreamMerger
 
     def base_social_command
       <<-CMD
+        sleep 30
         ffmpeg -hide_banner -loglevel verbose -y \
         -i "#{intro_file}" \
         -live_start_index 0 -re -max_reload 1000000 -m3u8_hold_counters 1000000 -i "#{out_m3u8.path}" \
@@ -203,6 +219,48 @@ module StreamMerger
       puts "Process #{process.pid} does not exist."
     rescue Errno::EPERM
       puts "You do not have permission to kill process #{process.pid}."
+    end
+
+    def cropped_video
+      stream = ffmpeg_resolution(participant_m3u8)
+      input_width = stream[:width]
+      input_height = stream[:height]
+      resolution = OUTPUT_RESOLUTION
+
+      crop_filter = calculate_crop_filter(input_width, input_height, resolution)
+      ONE_GRID.sub("CROP_I", crop_filter)
+    end
+
+    def calculate_crop_filter(input_width, input_height, resolution)
+      if resolution[:o] == :horizontal
+        crop_horizontal(input_width, input_height)
+      else
+        crop_vertical(input_width, input_height)
+      end
+    end
+
+    def crop_horizontal(width, height)
+      ar_w = height * (OUTPUT_W / (OUTPUT_H / 2))
+      ar_h = width * ((OUTPUT_H / 2) / OUTPUT_W)
+
+      dest_w = height < ar_h ? ar_w : width
+      dest_h = width < ar_w ? ar_h : height
+      dest_x = dest_w == width ? 0 : (width - dest_w).to_f / 2
+      dest_y = dest_h == height ? 0 : (height - dest_h).to_f / 2
+
+      "crop=#{dest_w}:#{dest_h}:#{dest_x}:#{dest_y}"
+    end
+
+    def crop_vertical(width, height)
+      ar_h = width * (OUTPUT_H / OUTPUT_W)
+      ar_w = height * (OUTPUT_W / OUTPUT_H)
+
+      dest_w = height < ar_h ? ar_w : width
+      dest_h = width < ar_w ? ar_h : height
+      dest_x = dest_w == width ? 0 : (width - dest_w) / 2
+      dest_y = dest_h == height ? 0 : (height - dest_h) / 2
+
+      "crop=#{dest_w}:#{dest_h}:#{dest_x}:#{dest_y}"
     end
   end
 end

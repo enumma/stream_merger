@@ -15,15 +15,19 @@ StreamMerger.configure do |config|
 end
 
 single_stream = StreamMerger::SingleStream.new(handle: "@mauricio",
-                                               conference_id: "conference_room_4071daf4-6a8a-4d74-a78b-de4ebdef879a",
-                                               stream_id: "participant_03fff6db-4be9-4334-b368-63ebfb964e7f",
+                                               conference_id: "conference_room_b7ef406a-83e3-4a6f-a40d-5d852f40bea3",
+                                               stream_id: "participant_8d9c80fc-0b93-42e1-a1bd-ff41ff6ea26f",
                                                stream_keys: [%w[YoutubeStream 6mbf-ve2b-kds3-6s5u-1qc3]])
 single_stream.start
-sleep 30
-loop do
-  break unless single_stream.upload_files
+thread = Thread.new do
+  loop do
+    break if !single_stream.upload_files && !single_stream.running?
+
+    sleep 1
+  end
 end
 single_stream.wait_to_finish
 single_stream.upload_files
 single_stream.kill_processes
+thread.join
 single_stream.purge!
