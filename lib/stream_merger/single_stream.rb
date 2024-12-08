@@ -31,7 +31,9 @@ module StreamMerger
     def wait_to_finish
       Process.wait(@ffmpeg_process.pid) if @ffmpeg_process
       Process.wait(@youtube_process.pid) if @youtube_process
+    end
 
+    def kill_processes
       kill_process(@ffmpeg_process)
       kill_process(@youtube_process)
     end

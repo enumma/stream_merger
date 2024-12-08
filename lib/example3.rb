@@ -24,3 +24,5 @@ loop do
   break unless single_stream.upload_files
 end
 single_stream.wait_to_finish
+single_stream.upload_files
+single_stream.kill_processes
