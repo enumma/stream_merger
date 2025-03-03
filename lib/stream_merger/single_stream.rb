@@ -11,7 +11,7 @@ module StreamMerger
     W_FONTSIZE = 32 # Watermark fontsize
     OUTPUT_W = 1080.0
     OUTPUT_H = 1920.0
-    ONE_GRID = "[0:v]CROP_I,scale=#{OUTPUT_W}:#{OUTPUT_H},hflip,setpts=PTS-STARTPTS[main];".freeze
+    ONE_GRID = "[0:v]CROP_I,scale=#{OUTPUT_W}:#{OUTPUT_H},setpts=PTS-STARTPTS[main];".freeze
     OUTPUT_RESOLUTION = { w: OUTPUT_W, h: OUTPUT_H, o: :vertical }.freeze
 
     def initialize(conference_id:, stream_id:, handle:, stream_keys:)
