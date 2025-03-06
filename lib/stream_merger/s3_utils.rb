@@ -15,8 +15,8 @@ module StreamMerger
       @streams_bucket ||= s3_resource.bucket(StreamMerger.streams_bucket)
     end
 
-    def cloudfront_url
-      StreamMerger.cloudfront_url
+    def cloud_front_url
+      StreamMerger.cloud_front_url
     end
 
     def s3_upload(path:, base_name:, force:)

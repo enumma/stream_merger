@@ -55,10 +55,10 @@ module StreamMerger
       configuration.streams_bucket
     end
 
-    def cloudfront_url
-      raise Error, "Empty cloudfront_url!" if configuration.cloudfront_url.nil?
+    def cloud_front_url
+      raise Error, "Empty cloud_front_url!" if configuration.cloud_front_url.nil?
 
-      configuration.cloudfront_url
+      configuration.cloud_front_url
     end
   end
 end
