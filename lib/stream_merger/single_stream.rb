@@ -199,15 +199,26 @@ module StreamMerger
 
       i = 0
       loop do
-        @participant_m3u8 = videos_bucket.objects(prefix: "streams/#{stream_id}").select do |s|
+        s3_object = videos_bucket.objects(prefix: "streams/#{stream_id}").select do |s|
           s.key.match?(/\.m3u8/)
-        end.first&.public_url
+        end.first
+        @participant_m3u8 = cloudfront_public_url(s3_object)
         break if @participant_m3u8 || i >= 600
 
         i += 1
         sleep 1
       end
       @participant_m3u8
+    end
+
+    def public_url(s3_object)
+      s3_object&.public_url
+    end
+
+    def cloudfront_public_url(s3_object)
+      return unless s3_object
+
+      cloudfront_url.gsub("asset_name", asset_name) + "/#{s3_object.key}"
     end
 
     def kill_process(process)

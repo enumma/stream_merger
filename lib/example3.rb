@@ -12,6 +12,7 @@ StreamMerger.configure do |config|
   }
   config.videos_bucket = ENV.fetch("S3_VIDEOS_BUCKET")
   config.streams_bucket = ENV.fetch("S3_STREAMS_BUCKET")
+  config.cloudfront_url = ENV.fetch("CLOUDFRONT_URL")
 end
 
 single_stream = StreamMerger::SingleStream.new(handle: "@andreszablah",

@@ -3,6 +3,6 @@
 module StreamMerger
   # Configuration
   class Configuration
-    attr_accessor :s3_credentials, :videos_bucket, :streams_bucket
+    attr_accessor :s3_credentials, :videos_bucket, :streams_bucket, :cloudfront_url
   end
 end

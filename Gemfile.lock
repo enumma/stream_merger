@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    stream_merger (0.8.2)
+    stream_merger (0.8.3)
       activesupport
       aws-sdk-s3
 

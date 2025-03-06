@@ -44,15 +44,21 @@ module StreamMerger
     end
 
     def videos_bucket
-      raise Error, "Empty S3 credentials!" if configuration.videos_bucket.nil?
+      raise Error, "Empty videos_bucket!" if configuration.videos_bucket.nil?
 
       configuration.videos_bucket
     end
 
     def streams_bucket
-      raise Error, "Empty S3 credentials!" if configuration.streams_bucket.nil?
+      raise Error, "Empty streams_bucket!" if configuration.streams_bucket.nil?
 
       configuration.streams_bucket
+    end
+
+    def cloudfront_url
+      raise Error, "Empty cloudfront_url!" if configuration.cloudfront_url.nil?
+
+      configuration.cloudfront_url
     end
   end
 end
