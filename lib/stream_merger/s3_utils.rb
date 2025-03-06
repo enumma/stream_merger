@@ -15,6 +15,10 @@ module StreamMerger
       @streams_bucket ||= s3_resource.bucket(StreamMerger.streams_bucket)
     end
 
+    def cloudfront_url
+      StreamMerger.cloudfront_url
+    end
+
     def s3_upload(path:, base_name:, force:)
       key = "streams/#{base_name}"
       s3_object = videos_bucket.object(key)
